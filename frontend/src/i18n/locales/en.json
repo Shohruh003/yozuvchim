@@ -1,0 +1,103 @@
+{
+  "nav": {
+    "profile": "Profile",
+    "orders": "Orders",
+    "payments": "Payments",
+    "newOrder": "New order"
+  },
+  "login": {
+    "loading": "Signing in...",
+    "redirecting": "Redirecting...",
+    "openInTelegram": "Please open via the Telegram bot.",
+    "tokenInvalid": "Invalid or expired token."
+  },
+  "profile": {
+    "balance": "Account balance",
+    "topUp": "+ Top up",
+    "stats": {
+      "orders": "Orders",
+      "completed": "Completed",
+      "documents": "Documents",
+      "spent": "Spent"
+    },
+    "recentOrders": "Recent orders",
+    "viewAll": "View all",
+    "noOrders": "No orders yet",
+    "createNew": "+ Create new order"
+  },
+  "orders": {
+    "title": "My orders",
+    "newOrderBtn": "+ New order",
+    "loading": "Loading...",
+    "empty": "No orders yet",
+    "downloadable": "📥 Ready to download",
+    "pages": "p."
+  },
+  "newOrder": {
+    "title": "New order",
+    "selectType": "Select document type",
+    "back": "← Back",
+    "topic": "Topic",
+    "topicPlaceholder": "Enter the topic...",
+    "language": "Language",
+    "size": "Size (pages/slides)",
+    "subject": "Subject",
+    "presentationStyle": "Presentation style",
+    "slideTemplate": "Slide template",
+    "submit": "Place order",
+    "submitting": "Submitting...",
+    "created": "Order created",
+    "error": "Error"
+  },
+  "orderDetail": {
+    "back": "← Orders",
+    "loading": "Loading...",
+    "field": {
+      "language": "Language",
+      "size": "Size",
+      "price": "Price",
+      "date": "Date"
+    },
+    "preparing": "Preparing",
+    "autoRefresh": "This page refreshes every 5 seconds.",
+    "result": "Result",
+    "download": "📥 Download"
+  },
+  "payments": {
+    "title": "Top up balance",
+    "info": "Payment details",
+    "cardNumber": "Card number",
+    "cardHolder": "Cardholder",
+    "instruction": "After payment, send the screenshot to the bot. The amount will be credited after admin approval.",
+    "history": "Payment history",
+    "loading": "Loading...",
+    "empty": "No history yet",
+    "status": {
+      "approved": "Approved",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    }
+  },
+  "status": {
+    "done": "Done",
+    "processing": "Processing",
+    "queued": "Queued",
+    "error": "Error",
+    "cancelled": "Cancelled"
+  },
+  "docTypes": {
+    "article": "Article",
+    "taqdimot": "Presentation",
+    "coursework": "Coursework",
+    "independent": "Independent work",
+    "thesis": "Thesis",
+    "diploma": "Diploma",
+    "dissertation": "Dissertation",
+    "manual": "Study manual"
+  },
+  "pptStyle": {
+    "akademik": "🏛 Academic",
+    "biznes": "💼 Business",
+    "kreativ": "🎨 Creative"
+  }
+}

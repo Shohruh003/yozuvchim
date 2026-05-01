@@ -1,0 +1,103 @@
+{
+  "nav": {
+    "profile": "Профиль",
+    "orders": "Заказы",
+    "payments": "Платежи",
+    "newOrder": "Новый заказ"
+  },
+  "login": {
+    "loading": "Вход...",
+    "redirecting": "Перенаправление...",
+    "openInTelegram": "Пожалуйста, откройте через Telegram бота.",
+    "tokenInvalid": "Недействительный или истёкший токен."
+  },
+  "profile": {
+    "balance": "Баланс счёта",
+    "topUp": "+ Пополнить",
+    "stats": {
+      "orders": "Заказы",
+      "completed": "Завершённые",
+      "documents": "Документы",
+      "spent": "Потрачено"
+    },
+    "recentOrders": "Последние заказы",
+    "viewAll": "Все",
+    "noOrders": "Нет заказов",
+    "createNew": "+ Создать заказ"
+  },
+  "orders": {
+    "title": "Мои заказы",
+    "newOrderBtn": "+ Новый заказ",
+    "loading": "Загрузка...",
+    "empty": "Заказов нет",
+    "downloadable": "📥 Готов к скачиванию",
+    "pages": "стр."
+  },
+  "newOrder": {
+    "title": "Новый заказ",
+    "selectType": "Выберите тип документа",
+    "back": "← Назад",
+    "topic": "Тема",
+    "topicPlaceholder": "Введите тему...",
+    "language": "Язык",
+    "size": "Объём (страниц/слайдов)",
+    "subject": "Предмет",
+    "presentationStyle": "Стиль презентации",
+    "slideTemplate": "Шаблон слайдов",
+    "submit": "Заказать",
+    "submitting": "Отправка...",
+    "created": "Заказ создан",
+    "error": "Ошибка"
+  },
+  "orderDetail": {
+    "back": "← Заказы",
+    "loading": "Загрузка...",
+    "field": {
+      "language": "Язык",
+      "size": "Объём",
+      "price": "Цена",
+      "date": "Дата"
+    },
+    "preparing": "Готовится",
+    "autoRefresh": "Страница обновляется каждые 5 секунд.",
+    "result": "Результат",
+    "download": "📥 Скачать"
+  },
+  "payments": {
+    "title": "Пополнение баланса",
+    "info": "Реквизиты",
+    "cardNumber": "Номер карты",
+    "cardHolder": "Владелец",
+    "instruction": "После оплаты отправьте скриншот боту. Сумма зачисляется после одобрения администратора.",
+    "history": "История платежей",
+    "loading": "Загрузка...",
+    "empty": "История пуста",
+    "status": {
+      "approved": "Одобрено",
+      "pending": "В ожидании",
+      "rejected": "Отклонено"
+    }
+  },
+  "status": {
+    "done": "Готово",
+    "processing": "В работе",
+    "queued": "В очереди",
+    "error": "Ошибка",
+    "cancelled": "Отменено"
+  },
+  "docTypes": {
+    "article": "Статья",
+    "taqdimot": "Презентация",
+    "coursework": "Курсовая работа",
+    "independent": "Самостоятельная работа",
+    "thesis": "Тезис",
+    "diploma": "Диплом",
+    "dissertation": "Диссертация",
+    "manual": "Учебное пособие"
+  },
+  "pptStyle": {
+    "akademik": "🏛 Академический",
+    "biznes": "💼 Бизнес",
+    "kreativ": "🎨 Креативный"
+  }
+}

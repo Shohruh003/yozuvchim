@@ -1,0 +1,103 @@
+{
+  "nav": {
+    "profile": "Profil",
+    "orders": "Buyurtmalar",
+    "payments": "To'lovlar",
+    "newOrder": "Yangi buyurtma"
+  },
+  "login": {
+    "loading": "Kirilmoqda...",
+    "redirecting": "Yo'naltirilmoqda...",
+    "openInTelegram": "Iltimos, Telegram bot orqali oching.",
+    "tokenInvalid": "Token yaroqsiz yoki muddati o'tgan."
+  },
+  "profile": {
+    "balance": "Hisob balansi",
+    "topUp": "+ To'ldirish",
+    "stats": {
+      "orders": "Buyurtmalar",
+      "completed": "Tugallangan",
+      "documents": "Hujjatlar",
+      "spent": "Sarflangan"
+    },
+    "recentOrders": "So'nggi buyurtmalar",
+    "viewAll": "Hammasini ko'rish",
+    "noOrders": "Hech qanday buyurtma yo'q",
+    "createNew": "+ Yangi buyurtma yaratish"
+  },
+  "orders": {
+    "title": "Mening buyurtmalarim",
+    "newOrderBtn": "+ Yangi buyurtma berish",
+    "loading": "Yuklanmoqda...",
+    "empty": "Hech qanday buyurtma yo'q",
+    "downloadable": "📥 Yuklab olish mumkin",
+    "pages": "bet"
+  },
+  "newOrder": {
+    "title": "Yangi buyurtma",
+    "selectType": "Hujjat turini tanlang",
+    "back": "← Ortga",
+    "topic": "Mavzu / sarlavha",
+    "topicPlaceholder": "Mavzuni kiriting...",
+    "language": "Til",
+    "size": "Hajm (bet/slayd)",
+    "subject": "Fan",
+    "presentationStyle": "Taqdimot uslubi",
+    "slideTemplate": "Slayd shabloni",
+    "submit": "Buyurtma berish",
+    "submitting": "Yuborilmoqda...",
+    "created": "Buyurtma yaratildi",
+    "error": "Xato"
+  },
+  "orderDetail": {
+    "back": "← Buyurtmalar",
+    "loading": "Yuklanmoqda...",
+    "field": {
+      "language": "Til",
+      "size": "Hajm",
+      "price": "Narxi",
+      "date": "Sana"
+    },
+    "preparing": "Tayyorlanmoqda",
+    "autoRefresh": "Bu sahifa har 5 soniyada o'zi yangilanadi.",
+    "result": "Natija",
+    "download": "📥 Yuklab olish"
+  },
+  "payments": {
+    "title": "Hisobni to'ldirish",
+    "info": "To'lov ma'lumotlari",
+    "cardNumber": "Karta raqami",
+    "cardHolder": "Karta egasi",
+    "instruction": "To'lovdan keyin, screenshot ni botga yuboring. Admin tasdiqlagandan keyin balansga qo'shiladi.",
+    "history": "To'lovlar tarixi",
+    "loading": "Yuklanmoqda...",
+    "empty": "Tarix bo'sh",
+    "status": {
+      "approved": "Tasdiqlangan",
+      "pending": "Kutilmoqda",
+      "rejected": "Rad etilgan"
+    }
+  },
+  "status": {
+    "done": "Tayyor",
+    "processing": "Jarayonda",
+    "queued": "Navbatda",
+    "error": "Xatolik",
+    "cancelled": "Bekor qilingan"
+  },
+  "docTypes": {
+    "article": "Maqola",
+    "taqdimot": "Taqdimot",
+    "coursework": "Kurs ishi",
+    "independent": "Mustaqil ish",
+    "thesis": "Tezis",
+    "diploma": "Diplom ishi",
+    "dissertation": "Dissertatsiya",
+    "manual": "O'quv qo'llanma"
+  },
+  "pptStyle": {
+    "akademik": "🏛 Akademik",
+    "biznes": "💼 Biznes",
+    "kreativ": "🎨 Kreativ"
+  }
+}
