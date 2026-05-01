@@ -72,19 +72,18 @@ def inline_options(
 # -------------------------
 # Main Menu (Reply KB)
 # -------------------------
-def main_menu_kb(is_admin: bool = False, user_id: int | None = None) -> ReplyKeyboardMarkup:
+def main_menu_kb(
+    is_admin: bool = False,
+    user_id: int | None = None,
+    web_app_token: str | None = None,
+) -> ReplyKeyboardMarkup:
     builder = ReplyKeyboardBuilder()
 
-    # Web App button — embed a fresh one-time token so it works on all platforms
+    # Web App button — caller passes a fresh one-time token (async generation)
     if WEB_APP_URL.startswith("https://"):
-        url = WEB_APP_URL
-        if user_id is not None:
-            try:
-                from web.login_tokens import make_token
-                token = make_token(user_id)
-                url = f"{WEB_APP_URL.rstrip('/')}/api/auth/token-login?token={token}"
-            except Exception:
-                pass
+        url = WEB_APP_URL.rstrip("/")
+        if web_app_token:
+            url = f"{url}/login?token={web_app_token}"
         builder.add(KeyboardButton(text="🌐 Web App ochish", web_app=WebAppInfo(url=url)))
 
     for text in MAIN_MENU_BUTTONS:

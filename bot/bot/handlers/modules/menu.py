@@ -88,7 +88,13 @@ async def cmd_start(message: Message, state: FSMContext, bot: Bot):
     
     welcome_text += "\n\nQuyidagi tugmalardan birini tanlang:"
 
-    await message.answer(welcome_text, reply_markup=main_menu_kb(is_admin, user_id=message.from_user.id), parse_mode="HTML")
+    from ...login_tokens import make_token
+    web_token = await make_token(message.from_user.id)
+    await message.answer(
+        welcome_text,
+        reply_markup=main_menu_kb(is_admin, user_id=message.from_user.id, web_app_token=web_token),
+        parse_mode="HTML",
+    )
 
 
 @router.callback_query(F.data == "sub:check")
@@ -98,7 +104,12 @@ async def callback_sub_check(cb: CallbackQuery, bot: Bot):
             await cb.message.edit_text("✅ Rahmat! Barchasi joyida. Menu tanlang:")
         except TelegramBadRequest:
             pass
-        await cb.message.answer("Asosiy menu:", reply_markup=main_menu_kb(db_is_admin(cb.from_user.id), user_id=cb.from_user.id))
+        from ...login_tokens import make_token
+        web_token = await make_token(cb.from_user.id)
+        await cb.message.answer(
+            "Asosiy menu:",
+            reply_markup=main_menu_kb(db_is_admin(cb.from_user.id), user_id=cb.from_user.id, web_app_token=web_token),
+        )
     else:
         await cb.answer("❌ Hali ham hamma kanallarga a'zo emassiz!", show_alert=True)
 
@@ -247,7 +258,13 @@ async def catch_all(message: Message):
     if message.from_user and message.from_user.is_bot:
         return
 
+    from ...login_tokens import make_token
+    web_token = await make_token(message.from_user.id)
     await message.answer(
         "Iltimos, quyidagi tugmalardan birini tanlang:",
-        reply_markup=main_menu_kb(db_is_admin(message.from_user.id), user_id=message.from_user.id),
+        reply_markup=main_menu_kb(
+            db_is_admin(message.from_user.id),
+            user_id=message.from_user.id,
+            web_app_token=web_token,
+        ),
     )

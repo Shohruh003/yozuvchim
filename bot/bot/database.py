@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from sqlalchemy import (
-    String, Integer, DateTime, Text, Boolean, JSON,
+    String, Integer, BigInteger, DateTime, Text, Boolean, JSON,
     ForeignKey, select, update, func, Index, UniqueConstraint, CheckConstraint, event, text
 )
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -48,29 +48,29 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     username: Mapped[str] = mapped_column(String(128), default="", server_default="", index=True)
     full_name: Mapped[str] = mapped_column(String(256), default="", server_default="")
     balance: Mapped[int] = mapped_column(Integer, default=0, server_default="0", index=True)
 
-    has_used_free_trial: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
+    has_used_free_trial: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     daily_limit: Mapped[int] = mapped_column(Integer, default=5, server_default="5")
 
     referral_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
-    is_blocked: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0", index=True)
+    is_blocked: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false", index=True)
 
     role: Mapped[str] = mapped_column(String(32), default="user", server_default="user")
     language_code: Mapped[str] = mapped_column(String(8), default="uz", server_default="uz")
     total_spent: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
-    referred_by_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    referred_by_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     referral_tier: Mapped[str] = mapped_column(String(16), default="level1", server_default="level1")
     plan: Mapped[str] = mapped_column(String(32), default="free", server_default="free")
     total_documents: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     total_orders: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     time_saved: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     last_active: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utcnow, server_default=func.datetime("now")
+        DateTime(timezone=True), default=utcnow, server_default=func.now()
     )
 
     academic_context: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
@@ -80,13 +80,13 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=utcnow,
-        server_default=func.datetime("now"),
+        server_default=func.now(),
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=utcnow,
         onupdate=utcnow,
-        server_default=func.datetime("now"),
+        server_default=func.now(),
     )
 
     # ✅ MUHIM: relationship kolleksiya bo'lsa list[...] bo'lishi kerak (Sequence emas)
@@ -108,7 +108,7 @@ class Request(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
     user_id: Mapped[int] = mapped_column(
-        Integer,
+        BigInteger,
         ForeignKey("users.id", ondelete="CASCADE"),
         index=True,
     )
@@ -132,8 +132,8 @@ class Request(Base):
 
     quality_score: Mapped[float] = mapped_column(default=0.0, server_default="0.0")
     meta_json: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict, server_default="{}")
-    is_free: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
-    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
+    is_free: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     result_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     status: Mapped[str] = mapped_column(
@@ -159,10 +159,10 @@ class Request(Base):
     attempts: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utcnow, server_default=func.datetime("now")
+        DateTime(timezone=True), default=utcnow, server_default=func.now()
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utcnow, onupdate=utcnow, server_default=func.datetime("now")
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow, server_default=func.now()
     )
 
     rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
@@ -186,7 +186,7 @@ class Payment(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
     user_id: Mapped[int] = mapped_column(
-        Integer,
+        BigInteger,
         ForeignKey("users.id", ondelete="CASCADE"),
         index=True,
     )
@@ -198,7 +198,7 @@ class Payment(Base):
     screenshot_file_id: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utcnow, server_default=func.datetime("now")
+        DateTime(timezone=True), default=utcnow, server_default=func.now()
     )
 
     user: Mapped["User"] = relationship(back_populates="payments", lazy="selectin")
@@ -211,7 +211,7 @@ class Ticket(Base):
 
     # ✅ yaxshiroq: user bilan FK bog'lash
     user_id: Mapped[int] = mapped_column(
-        Integer,
+        BigInteger,
         ForeignKey("users.id", ondelete="CASCADE"),
         index=True,
     )
@@ -223,7 +223,7 @@ class Ticket(Base):
     status: Mapped[str] = mapped_column(String(16), default="open", server_default="open", index=True)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utcnow, server_default=func.datetime("now")
+        DateTime(timezone=True), default=utcnow, server_default=func.now()
     )
 
 
@@ -238,7 +238,7 @@ class Catalog(Base):
     price: Mapped[int] = mapped_column(Integer, default=5000, server_default="5000")
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utcnow, server_default=func.datetime("now")
+        DateTime(timezone=True), default=utcnow, server_default=func.now()
     )
 
 
@@ -253,7 +253,7 @@ class PromoCode(Base):
 
     expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=utcnow, server_default=func.datetime("now")
+        DateTime(timezone=True), default=utcnow, server_default=func.now()
     )
 
 

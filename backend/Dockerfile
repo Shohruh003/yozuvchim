@@ -31,5 +31,6 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY package.json ./
 
-# Run migrations on startup, then start the API
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main.js"]
+# Sync schema (creates tables on first run) then start the API.
+# Switch to `prisma migrate deploy` once you start tracking real migrations.
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss --skip-generate && node dist/src/main.js"]
