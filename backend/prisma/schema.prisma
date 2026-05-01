@@ -1,0 +1,217 @@
+// Prisma schema for yozuvchim backend.
+// IMPORTANT: column names match the existing SQLite schema used by the Python bot
+// so the bot can read/write the same tables via SQLAlchemy.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------
+// User
+// ----------------------------------------------------------------
+model User {
+  id                  BigInt    @id // Telegram user id
+  username            String    @default("") @db.VarChar(128)
+  full_name           String    @default("") @db.VarChar(256)
+  balance             Int       @default(0)
+
+  has_used_free_trial Boolean   @default(false)
+  daily_limit         Int       @default(5)
+
+  referral_count      Int       @default(0)
+  is_blocked          Boolean   @default(false)
+
+  role                String    @default("user")    @db.VarChar(32)
+  language_code       String    @default("uz")      @db.VarChar(8)
+  total_spent         Int       @default(0)
+  referred_by_id      BigInt?
+  referral_tier       String    @default("level1")  @db.VarChar(16)
+  plan                String    @default("free")    @db.VarChar(32)
+  total_documents     Int       @default(0)
+  total_orders        Int       @default(0)
+  time_saved          Int       @default(0)
+  last_active         DateTime  @default(now())     @db.Timestamptz(6)
+
+  academic_context    Json?
+  vip_expires_at      DateTime? @db.Timestamptz(6)
+
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime  @updatedAt      @db.Timestamptz(6)
+
+  requests            Request[]
+  payments            Payment[]
+  tickets             Ticket[]
+  sessions            Session[]
+
+  @@index([username])
+  @@index([balance])
+  @@index([is_blocked])
+  @@map("users")
+}
+
+// ----------------------------------------------------------------
+// Request — AI generation order
+// ----------------------------------------------------------------
+model Request {
+  id                Int       @id @default(autoincrement())
+  user_id           BigInt
+  user              User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  doc_type          String    @db.VarChar(32)
+  title             String    @db.VarChar(512)
+  title_topic       String    @default("") @db.VarChar(512)
+  language          String    @db.VarChar(16)
+  level             String    @default("standard") @db.VarChar(32)
+
+  length            String    @default("1") @db.VarChar(8)
+  price             Int       @default(0)
+
+  requirements_text String?   @db.Text
+  custom_structure  String?   @db.Text
+  export_format     String    @default("docx") @db.VarChar(16)
+
+  citation_style    String    @default("APA") @db.VarChar(32)
+
+  quality_score     Float     @default(0.0)
+  meta_json         Json      @default("{}")
+  is_free           Boolean   @default(false)
+  is_deleted        Boolean   @default(false)
+  result_text       String?   @db.Text
+
+  status            String    @default("queued") @db.VarChar(32) // queued | processing | done | error
+
+  current_step      Int       @default(0)
+  total_steps       Int       @default(1)
+
+  error_log         String?   @db.Text
+  result_path       String?   @db.VarChar(1024)
+  result_file_id    String?   @db.VarChar(512)
+
+  download_token    String?   @unique @db.VarChar(64)
+  expires_at        DateTime? @db.Timestamptz(6)
+
+  locked_by         String?   @db.VarChar(64)
+  locked_at         DateTime? @db.Timestamptz(6)
+
+  attempts          Int       @default(0)
+
+  created_at        DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime  @updatedAt      @db.Timestamptz(6)
+
+  rating            Int?
+  feedback          String?   @db.Text
+
+  @@index([doc_type])
+  @@index([language])
+  @@index([level])
+  @@index([status])
+  @@index([user_id, status])
+  @@map("requests")
+}
+
+// ----------------------------------------------------------------
+// Payment
+// ----------------------------------------------------------------
+model Payment {
+  id                  Int       @id @default(autoincrement())
+  user_id             BigInt
+  user                User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  invoice_id          String    @unique @db.VarChar(64)
+  amount              Int       @default(0)
+  status              String    @default("pending") @db.VarChar(16) // pending | approved | rejected
+  screenshot_file_id  String?   @db.VarChar(256)
+
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("payments")
+}
+
+// ----------------------------------------------------------------
+// Ticket — support / contact
+// ----------------------------------------------------------------
+model Ticket {
+  id          Int       @id @default(autoincrement())
+  user_id     BigInt
+  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  ticket_id   String    @unique @db.VarChar(64)
+  subject     String    @db.VarChar(256)
+  message     String    @db.Text
+
+  status      String    @default("open") @db.VarChar(16)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@index([status])
+  @@map("tickets")
+}
+
+// ----------------------------------------------------------------
+// Catalog — premade samples
+// ----------------------------------------------------------------
+model Catalog {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(512)
+  doc_type    String    @db.VarChar(32)
+  language    String    @db.VarChar(16)
+  file_path   String    @db.VarChar(1024)
+  price       Int       @default(5000)
+
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@index([doc_type])
+  @@index([language])
+  @@map("catalog")
+}
+
+// ----------------------------------------------------------------
+// PromoCode
+// ----------------------------------------------------------------
+model PromoCode {
+  id          Int       @id @default(autoincrement())
+  code        String    @unique @db.VarChar(32)
+
+  amount      Int
+  uses_left   Int       @default(1)
+
+  expires_at  DateTime? @db.Timestamptz(6)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@map("promo_codes")
+}
+
+// ----------------------------------------------------------------
+// AppSettings — key/value store (prices, flags, etc.)
+// ----------------------------------------------------------------
+model AppSettings {
+  key         String    @id @db.VarChar(64)
+  value       String    @default("") @db.VarChar(256)
+
+  @@map("app_settings")
+}
+
+// ----------------------------------------------------------------
+// Session — refresh-token sessions for the web app
+// ----------------------------------------------------------------
+model Session {
+  id            String    @id @default(cuid())
+  user_id       BigInt
+  user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  refresh_hash  String    @unique @db.VarChar(128)
+  user_agent    String?   @db.VarChar(256)
+  ip            String?   @db.VarChar(64)
+
+  expires_at    DateTime  @db.Timestamptz(6)
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  last_used_at  DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@index([user_id])
+  @@index([expires_at])
+  @@map("sessions")
+}
