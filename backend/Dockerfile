@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install deps (including dev) for build
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 # Copy source
 COPY tsconfig.json nest-cli.json ./
@@ -33,4 +33,4 @@ COPY package.json ./
 
 # Sync schema (creates tables on first run) then start the API.
 # Switch to `prisma migrate deploy` once you start tracking real migrations.
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss --skip-generate && node dist/src/main.js"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss --skip-generate && node dist/main.js"]

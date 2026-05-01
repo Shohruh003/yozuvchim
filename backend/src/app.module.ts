@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Controller, Get, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
@@ -11,7 +11,13 @@ import { PaymentsModule } from './payments/payments.module';
 import { TemplatesModule } from './templates/templates.module';
 import { AdminModule } from './admin/admin.module';
 
+@Controller('health')
+class HealthController {
+  @Get() get() { return { status: 'ok' }; }
+}
+
 @Module({
+  controllers: [HealthController],
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env', '../.env'] }),
     ThrottlerModule.forRoot([

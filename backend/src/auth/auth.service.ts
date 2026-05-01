@@ -108,7 +108,7 @@ export class AuthService {
     const payload = { sub: userId.toString() };
     const access_token = await this.jwt.signAsync(payload, {
       secret: accessSecret,
-      expiresIn: accessTtl,
+      expiresIn: accessTtl as any,
     });
     const refresh_token = randomBytes(48).toString('base64url');
 

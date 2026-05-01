@@ -15,7 +15,7 @@ import { LoginTokensService } from './login-tokens.service';
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRET') || 'dev_secret',
-        signOptions: { expiresIn: config.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m' },
+        signOptions: { expiresIn: (config.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m') as any },
       }),
       inject: [ConfigService],
     }),
