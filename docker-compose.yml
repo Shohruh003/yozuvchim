@@ -1,0 +1,135 @@
+name: yozuvchim
+
+services:
+  # ----------------- PostgreSQL -----------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: yozuvchim_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - yozuvchim_net
+
+  # ----------------- Redis -----------------
+  redis:
+    image: redis:7-alpine
+    container_name: yozuvchim_redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6381}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - yozuvchim_net
+
+  # ----------------- NestJS Backend -----------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: yozuvchim_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN:-15m}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      BOT_TOKEN: ${BOT_TOKEN}
+      BOT_USERNAME: ${BOT_USERNAME}
+      WEB_APP_URL: ${WEB_APP_URL}
+      ADMIN_IDS: ${ADMIN_IDS}
+      PORT: 3000
+      NODE_ENV: production
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    volumes:
+      - bot_data:/app/data        # shared with bot for downloads
+    networks:
+      - yozuvchim_net
+
+  # ----------------- Python Bot Worker -----------------
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    container_name: yozuvchim_bot
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379/0
+      BOT_TOKEN: ${BOT_TOKEN}
+      BOT_USERNAME: ${BOT_USERNAME}
+      WEB_APP_URL: ${WEB_APP_URL}
+      AI_PROVIDER: ${AI_PROVIDER}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL}
+      SECONDARY_AI_API_KEY: ${SECONDARY_AI_API_KEY}
+      SECONDARY_AI_BASE_URL: ${SECONDARY_AI_BASE_URL}
+      SECONDARY_AI_MODEL: ${SECONDARY_AI_MODEL}
+      ADMIN_IDS: ${ADMIN_IDS}
+      FREE_DAILY_LIMIT: ${FREE_DAILY_LIMIT:-5}
+      CARD_DETAILS: ${CARD_DETAILS}
+      CARD_HOLDER: ${CARD_HOLDER}
+      CURRENCY: ${CURRENCY:-UZS}
+      UNSPLASH_API_KEY: ${UNSPLASH_API_KEY}
+      DATA_DIR: /app/data
+    volumes:
+      - bot_data:/app/data        # shared with backend
+    networks:
+      - yozuvchim_net
+
+  # ----------------- nginx + Frontend -----------------
+  web:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+    container_name: yozuvchim_web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    networks:
+      - yozuvchim_net
+
+volumes:
+  postgres_data:
+  redis_data:
+  bot_data:
+
+networks:
+  yozuvchim_net:
+    driver: bridge

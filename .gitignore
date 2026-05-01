@@ -1,0 +1,52 @@
+# --- Common ---
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+.vscode/
+.idea/
+.claude/
+
+# --- Node (backend, frontend) ---
+node_modules/
+dist/
+build/
+.next/
+.cache/
+.turbo/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+
+# --- Python (bot) ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+.venv/
+env/
+
+# --- Docker / Data volumes (host-mounted) ---
+data/
+postgres_data/
+redis_data/
+uploads/
+bot/data/
+bot/logs/
+bot/*.db
+bot/*.db-shm
+bot/*.db-wal
+bot/*.pid
+
+# --- Prisma generated ---
+backend/prisma/generated/
+
+# --- OS ---
+Thumbs.db
+desktop.ini
