@@ -47,7 +47,13 @@
     "submit": "Заказать",
     "submitting": "Отправка...",
     "created": "Заказ создан",
-    "error": "Ошибка"
+    "error": "Ошибка",
+    "priceLabel": "Цена",
+    "freeTrialBadge": "Ваш первый заказ бесплатно!",
+    "balanceLabel": "Баланс",
+    "insufficientBalance": "Недостаточно средств",
+    "topUpBalance": "Пополнить баланс",
+    "calculating": "Расчёт..."
   },
   "orderDetail": {
     "back": "← Заказы",

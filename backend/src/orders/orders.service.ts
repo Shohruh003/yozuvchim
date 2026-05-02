@@ -2,12 +2,16 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { existsSync, statSync, createReadStream } from 'fs';
 import { Readable } from 'stream';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { quotePrice } from './pricing';
+import { OrderQueueService } from './queue.service';
 
 const DOC_TYPE_LABELS: Record<string, string> = {
   article: '📄 Maqola',
@@ -22,7 +26,12 @@ const DOC_TYPE_LABELS: Record<string, string> = {
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(OrdersService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly queue: OrderQueueService,
+  ) {}
 
   // ----------- list -----------
   async list(userId: bigint, limit = 50) {
@@ -47,29 +56,114 @@ export class OrdersService {
     };
   }
 
+  // ----------- price preview -----------
+  quote(docType: string, length: number) {
+    return quotePrice(docType, length);
+  }
+
   // ----------- create -----------
   async create(userId: bigint, dto: CreateOrderDto) {
-    const meta: Record<string, any> = {};
-    for (const k of [
-      'subject', 'uni', 'major', 'ppt_style', 'ppt_template',
-      'student_name', 'advisor', 'authors', 'workplace', 'author_email',
-    ] as const) {
-      if (dto[k]) meta[k] = dto[k];
+    const length = Math.max(1, dto.length ?? 1);
+    const { price: serverPrice } = quotePrice(dto.doc_type, length);
+
+    // If frontend sent expected_price, it must match server's calculation
+    if (
+      dto.expected_price !== undefined &&
+      dto.expected_price !== null &&
+      dto.expected_price !== serverPrice
+    ) {
+      throw new BadRequestException(
+        `Narx o'zgargan. Sahifani yangilang. Kutilgan: ${dto.expected_price}, hozirgi: ${serverPrice}`,
+      );
     }
 
-    const order = await this.prisma.request.create({
-      data: {
-        user_id: userId,
-        doc_type: dto.doc_type,
-        title: dto.title,
-        language: dto.language || 'uz',
-        length: String(dto.length ?? 1),
-        status: 'queued',
-        meta_json: meta,
-      },
+    const order = await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({ where: { id: userId } });
+      if (!user) throw new NotFoundException('User not found');
+      if (user.is_blocked) throw new ForbiddenException('User is blocked');
+
+      // Free trial: first ever order is free
+      const useFreeTrial = !user.has_used_free_trial;
+      const finalPrice = useFreeTrial ? 0 : serverPrice;
+
+      if (!useFreeTrial && user.balance < serverPrice) {
+        throw new BadRequestException(
+          `Yetarli mablag' yo'q. Kerak: ${serverPrice.toLocaleString('uz-UZ')} so'm, balansda: ${user.balance.toLocaleString('uz-UZ')} so'm`,
+        );
+      }
+
+      const meta: Record<string, any> = {
+        // Track exactly how much we charged so refund can return the same amount
+        charged_price: finalPrice,
+      };
+      for (const k of [
+        'subject', 'uni', 'major', 'ppt_style', 'ppt_template',
+        'student_name', 'advisor', 'authors', 'workplace', 'author_email',
+      ] as const) {
+        if (dto[k]) meta[k] = dto[k];
+      }
+
+      const created = await tx.request.create({
+        data: {
+          user_id: userId,
+          doc_type: dto.doc_type,
+          title: dto.title,
+          language: dto.language || 'uz',
+          length: String(length),
+          price: finalPrice,
+          status: 'queued',
+          is_free: useFreeTrial,
+          meta_json: meta,
+        },
+      });
+
+      if (useFreeTrial) {
+        await tx.user.update({
+          where: { id: userId },
+          data: { has_used_free_trial: true, total_orders: { increment: 1 } },
+        });
+      } else {
+        await tx.user.update({
+          where: { id: userId },
+          data: {
+            balance: { decrement: serverPrice },
+            total_spent: { increment: serverPrice },
+            total_orders: { increment: 1 },
+          },
+        });
+      }
+
+      return created;
     });
 
-    return { id: order.id, status: order.status };
+    // Push to bot worker queue (after the transaction commits)
+    await this.queue.enqueue(order.id);
+
+    return {
+      id: order.id,
+      status: order.status,
+      price: order.price,
+      is_free: order.is_free,
+    };
+  }
+
+  // ----------- cancel (user) -----------
+  async cancel(userId: bigint, id: number) {
+    const order = await this.prisma.request.findUnique({ where: { id } });
+    if (!order || order.user_id !== userId || order.is_deleted) {
+      throw new NotFoundException('Order not found');
+    }
+    if (order.status !== 'queued') {
+      throw new BadRequestException('Faqat navbatdagi buyurtmani bekor qilish mumkin');
+    }
+    await this.prisma.$transaction(async (tx) => {
+      await tx.request.update({
+        where: { id },
+        data: { status: 'cancelled' },
+      });
+      // Refund will be handled by RefundsService cron
+    });
+    return { ok: true };
   }
 
   // ----------- file download -----------

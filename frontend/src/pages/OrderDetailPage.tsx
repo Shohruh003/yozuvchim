@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
-import { apiGet } from '@/lib/api';
+import { api, apiGet } from '@/lib/api';
 import { formatNumber } from '@/lib/utils';
 import { StatusBadge } from '@/components/StatusBadge';
 
@@ -53,7 +54,14 @@ export default function OrderDetailPage() {
 
   if (!order) return <div className="text-slate-400 text-sm">Yuklanmoqda...</div>;
 
-  const pct = Math.round((order.current_step / Math.max(order.total_steps, 1)) * 100);
+  // Cap progress at 95% while still processing — final 100% only on status='done'
+  const rawPct = Math.round((order.current_step / Math.max(order.total_steps, 1)) * 100);
+  const pct =
+    order.status === 'done'
+      ? 100
+      : order.status === 'processing' || order.status === 'queued'
+        ? Math.min(rawPct, 95)
+        : rawPct;
 
   return (
     <>
@@ -100,12 +108,32 @@ export default function OrderDetailPage() {
       {order.has_file && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 mt-4">
           <h3 className="font-semibold mb-3">Natija</h3>
-          <a
-            href={`/api/orders/${order.id}/download`}
+          <button
+            onClick={async () => {
+              try {
+                const res = await api.get(`/orders/${order.id}/download`, {
+                  responseType: 'blob',
+                });
+                const cd = (res.headers['content-disposition'] as string) || '';
+                const match = cd.match(/filename="?([^";]+)"?/);
+                const filename = match?.[1] || `order-${order.id}.docx`;
+                const blob = new Blob([res.data]);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+              } catch (err: any) {
+                toast.error(err?.response?.data?.message || 'Yuklashda xato');
+              }
+            }}
             className="inline-block px-5 py-3 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600"
           >
             📥 Yuklab olish
-          </a>
+          </button>
         </div>
       )}
     </>

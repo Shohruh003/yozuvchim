@@ -47,7 +47,13 @@
     "submit": "Place order",
     "submitting": "Submitting...",
     "created": "Order created",
-    "error": "Error"
+    "error": "Error",
+    "priceLabel": "Price",
+    "freeTrialBadge": "Your first order is free!",
+    "balanceLabel": "Balance",
+    "insufficientBalance": "Insufficient balance",
+    "topUpBalance": "Top up balance",
+    "calculating": "Calculating..."
   },
   "orderDetail": {
     "back": "← Orders",

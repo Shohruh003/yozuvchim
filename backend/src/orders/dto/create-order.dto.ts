@@ -33,6 +33,10 @@ export class CreateOrderDto {
   @IsOptional() @IsInt() @Min(1) @Max(50)
   length?: number;
 
+  /** Price the user saw on the form. Backend rejects if it disagrees with the server price. */
+  @IsOptional() @IsInt() @Min(0)
+  expected_price?: number;
+
   // Free-form metadata
   @IsOptional() @IsString() subject?: string;
   @IsOptional() @IsString() uni?: string;

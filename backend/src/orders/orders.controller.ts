@@ -27,6 +27,11 @@ export class OrdersController {
     return DOC_TYPES.map((key) => ({ key }));
   }
 
+  @Get('quote')
+  quote(@Query('doc_type') docType: string, @Query('length') length: string) {
+    return this.orders.quote(docType, parseInt(length || '1', 10));
+  }
+
   @Get()
   list(@CurrentUser() user: any, @Query('limit') limit?: string) {
     return this.orders.list(user.id, limit ? Number(limit) : 50);
@@ -40,6 +45,11 @@ export class OrdersController {
   @Post()
   create(@CurrentUser() user: any, @Body() dto: CreateOrderDto) {
     return this.orders.create(user.id, dto);
+  }
+
+  @Post(':id/cancel')
+  cancel(@CurrentUser() user: any, @Param('id', ParseIntPipe) id: number) {
+    return this.orders.cancel(user.id, id);
   }
 
   @Get(':id/download')

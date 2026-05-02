@@ -47,7 +47,13 @@
     "submit": "Buyurtma berish",
     "submitting": "Yuborilmoqda...",
     "created": "Buyurtma yaratildi",
-    "error": "Xato"
+    "error": "Xato",
+    "priceLabel": "Narxi",
+    "freeTrialBadge": "Birinchi buyurtmangiz bepul!",
+    "balanceLabel": "Balans",
+    "insufficientBalance": "Balans yetarli emas",
+    "topUpBalance": "Hisobni to'ldirish",
+    "calculating": "Hisoblanmoqda..."
   },
   "orderDetail": {
     "back": "← Buyurtmalar",
