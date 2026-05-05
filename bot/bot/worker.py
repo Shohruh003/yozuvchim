@@ -617,14 +617,20 @@ async def process_one_request(req_id: int, bot: Bot):
             if RESULTS_CHANNEL:
                 with suppress(Exception):
                     user_label = f"<a href='tg://user?id={user_id}'>#{user_id}</a>"
+                    bot_link = f"https://t.me/{me.username}" if me.username else ""
                     audit_caption = (
                         f"📁 <b>Yangi natija — #{req_id}</b>\n\n"
                         f"👤 Foydalanuvchi: {user_label}\n"
                         f"📝 Mavzu: {html_escape(title_clean)}\n"
                         f"🧬 Tur: <code>{doc_type.upper()}</code>\n"
                         f"📏 Hajm: <code>{length_str} bet</code>\n"
-                        f"⏱ Sana: {now_utc().strftime('%Y-%m-%d %H:%M UTC')}"
+                        f"⏱ Sana: {now_utc().strftime('%Y-%m-%d %H:%M UTC')}\n\n"
+                        f"🤖 Bot: <a href='{bot_link}'>@{me.username}</a>"
                     )
+                    if RESULTS_CHANNEL_URL:
+                        audit_caption += (
+                            f"\n📢 Kanal: <a href='{RESULTS_CHANNEL_URL}'>{RESULTS_CHANNEL_URL}</a>"
+                        )
                     await bot.send_document(
                         RESULTS_CHANNEL,
                         FSInputFile(str(file_path)),

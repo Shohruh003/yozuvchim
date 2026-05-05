@@ -62,6 +62,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     setLoading(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     apiGet<UsersResp>(
       `/admin/users?limit=${PAGE_SIZE}&offset=${page * PAGE_SIZE}&search=${encodeURIComponent(debounced)}`,
     )

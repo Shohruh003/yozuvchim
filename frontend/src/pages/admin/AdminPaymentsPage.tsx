@@ -45,6 +45,7 @@ export default function AdminPaymentsPage() {
 
   useEffect(() => {
     reload();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     const id = window.setInterval(reload, 20_000);
     return () => window.clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,11 +95,14 @@ export default function AdminPaymentsPage() {
     setPreview(null);
   }
 
-  const fmtDate = (s: string) =>
-    new Date(s).toLocaleString(i18n.language === 'ru' ? 'ru-RU' : 'uz-UZ', {
-      day: '2-digit', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
+  const fmtDate = (s: string) => {
+    const d = new Date(s);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return {
+      date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+      time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+    };
+  };
 
   return (
     <div className="space-y-4">
@@ -134,14 +138,25 @@ export default function AdminPaymentsPage() {
                       {p.username ? `@${p.username}` : `#${p.user_id}`}
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <div className="font-bold text-slate-900 tabular-nums">
-                      {formatNumber(p.amount)}
+                  {/* Skrinshotgacha summa noma'lum — adminga "Tasdiqlash"da kiritadi */}
+                  {p.amount > 0 && (
+                    <div className="text-right shrink-0">
+                      <div className="font-bold text-slate-900 tabular-nums">
+                        {formatNumber(p.amount)}
+                      </div>
+                      <div className="text-[10px] text-slate-500">so'm</div>
                     </div>
-                    <div className="text-[10px] text-slate-500">so'm</div>
-                  </div>
+                  )}
                 </div>
-                <div className="text-[11px] text-slate-500">{fmtDate(p.created_at)}</div>
+                {(() => {
+                  const dt = fmtDate(p.created_at);
+                  return (
+                    <div className="text-[11px] text-slate-500 mt-1 space-y-0.5">
+                      <div>sana: <span className="font-medium text-slate-700 tabular-nums">{dt.date}</span></div>
+                      <div>vaqt: <span className="font-medium text-slate-700 tabular-nums">{dt.time}</span></div>
+                    </div>
+                  );
+                })()}
 
                 <div className="mt-auto pt-4 flex gap-2">
                   <button
