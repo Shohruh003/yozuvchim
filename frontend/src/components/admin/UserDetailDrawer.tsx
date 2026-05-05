@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, ShieldCheck, ShieldOff, Crown } from 'lucide-react';
+import { X, ShieldCheck, ShieldOff, Crown, KeyRound } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { apiGet, apiPost } from '@/lib/api';
 import { formatNumber } from '@/lib/utils';
 import { StatusBadge } from '@/components/StatusBadge';
+import { CredentialsRevealModal } from '@/components/admin/CredentialsRevealModal';
 
 interface OrderRow {
   id: number;
@@ -67,6 +68,7 @@ export function UserDetailDrawer({ userId, isSuperadmin, onClose, onChange }: Pr
   const [data, setData] = useState<Detail | null>(null);
   const [tab, setTab] = useState<'orders' | 'payments'>('orders');
   const [busy, setBusy] = useState(false);
+  const [creds, setCreds] = useState<{ username: string; password: string } | null>(null);
 
   const [ordersData, setOrdersData] = useState<PageResp<OrderRow> | null>(null);
   const [ordersPage, setOrdersPage] = useState(0);
@@ -104,10 +106,34 @@ export function UserDetailDrawer({ userId, isSuperadmin, onClose, onChange }: Pr
     if (!data) return;
     setBusy(true);
     try {
-      await apiPost(`/admin/users/${data.user.id}/role`, { role });
+      const r = await apiPost<{
+        role: string;
+        credentials?: { username: string; password: string } | null;
+      }>(`/admin/users/${data.user.id}/role`, { role });
       toast.success(t('admin.users.roleUpdated'));
       setData({ ...data, user: { ...data.user, role } });
+      if (r.credentials) {
+        setCreds(r.credentials);
+      }
       onChange?.();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Xato');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resetPassword() {
+    if (!data) return;
+    if (!confirm(t('admin.users.resetPasswordConfirm'))) return;
+    setBusy(true);
+    try {
+      const r = await apiPost<{ username: string; password: string }>(
+        `/admin/users/${data.user.id}/reset-password`,
+        {},
+      );
+      toast.success(t('admin.users.passwordReset'));
+      setCreds(r);
     } catch (e: any) {
       toast.error(e?.response?.data?.message || 'Xato');
     } finally {
@@ -212,6 +238,15 @@ export function UserDetailDrawer({ userId, isSuperadmin, onClose, onChange }: Pr
                       className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-300 text-slate-700 bg-slate-50 hover:bg-slate-100 text-sm font-medium disabled:opacity-50"
                     >
                       <ShieldOff size={15} /> {t('admin.users.demoteAdmin')}
+                    </button>
+                  )}
+                  {(data.user.role === 'admin' || data.user.role === 'superadmin') && (
+                    <button
+                      disabled={busy}
+                      onClick={resetPassword}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 text-sm font-medium disabled:opacity-50"
+                    >
+                      <KeyRound size={15} /> {t('admin.users.resetPassword')}
                     </button>
                   )}
                 </div>
@@ -324,6 +359,13 @@ export function UserDetailDrawer({ userId, isSuperadmin, onClose, onChange }: Pr
           </div>
         )}
       </aside>
+
+      <CredentialsRevealModal
+        open={!!creds}
+        username={creds?.username || ''}
+        password={creds?.password || ''}
+        onClose={() => setCreds(null)}
+      />
     </div>
   );
 }

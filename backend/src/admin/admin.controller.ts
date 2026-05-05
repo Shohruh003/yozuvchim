@@ -101,6 +101,12 @@ export class AdminController {
     return this.admin.setRole(actor.id, BigInt(id), body.role);
   }
 
+  @Post('users/:id/reset-password')
+  @UseGuards(SuperAdminGuard)
+  resetAdminPassword(@Param('id') id: string) {
+    return this.admin.resetAdminPassword(BigInt(id));
+  }
+
   // ----------- Superadmin: see admins and what they're doing -----------
   @Get('admins')
   @UseGuards(SuperAdminGuard)

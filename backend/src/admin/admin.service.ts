@@ -1,7 +1,26 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+
+function generatePassword(len = 14): string {
+  // base64url, no ambiguous chars (no padding) — easy to copy-paste
+  return randomBytes(len)
+    .toString('base64url')
+    .replace(/[-_]/g, '')
+    .slice(0, len);
+}
+
+function generateUsernameFor(userId: bigint, fullName: string): string {
+  const slug = (fullName || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .slice(0, 12);
+  const idTail = userId.toString().slice(-5);
+  return slug ? `${slug}_${idTail}` : `admin_${idTail}`;
+}
 
 @Injectable()
 export class AdminService {
@@ -518,7 +537,6 @@ export class AdminService {
     const target = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!target) throw new NotFoundException('User not found');
 
-    // A superadmin cannot demote themselves (prevents accidental lockout).
     if (
       actorId === userId &&
       target.role === 'superadmin' &&
@@ -527,7 +545,6 @@ export class AdminService {
       throw new NotFoundException('You cannot demote yourself');
     }
 
-    // Don't allow demoting the LAST remaining superadmin to a non-superadmin role.
     if (target.role === 'superadmin' && role !== 'superadmin') {
       const otherSuperadmins = await this.prisma.user.count({
         where: { role: 'superadmin', id: { not: userId } },
@@ -539,11 +556,57 @@ export class AdminService {
       }
     }
 
-    const u = await this.prisma.user.update({
+    const promoting = (role === 'admin' || role === 'superadmin');
+    const wasNotAdmin = !target.admin_username;
+
+    let credentials: { username: string; password: string } | null = null;
+    const data: Prisma.UserUpdateInput = { role };
+
+    if (promoting && wasNotAdmin) {
+      // Auto-generate per-user web login the first time someone is promoted.
+      let username = generateUsernameFor(userId, target.full_name || target.username || '');
+      // Ensure uniqueness (pad with random if collision)
+      let attempt = 0;
+      while (
+        await this.prisma.user.findUnique({ where: { admin_username: username } })
+      ) {
+        attempt += 1;
+        username = `${generateUsernameFor(userId, target.full_name || '')}${attempt}`;
+        if (attempt > 5) break;
+      }
+      const password = generatePassword(14);
+      const hash = await bcrypt.hash(password, 12);
+      data.admin_username = username;
+      data.admin_password_hash = hash;
+      credentials = { username, password };
+    }
+
+    const u = await this.prisma.user.update({ where: { id: userId }, data });
+    return {
+      id: u.id.toString(),
+      role: u.role,
+      // Returned ONLY on first promotion, plain-text password for the
+      // promoting superadmin to copy & forward. Never shown again.
+      credentials,
+    };
+  }
+
+  /** Reset/regenerate a user's web login password (returns plaintext once). */
+  async resetAdminPassword(userId: bigint) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+    if (user.role !== 'admin' && user.role !== 'superadmin') {
+      throw new NotFoundException('User is not an admin');
+    }
+    const username = user.admin_username
+      || generateUsernameFor(userId, user.full_name || user.username || '');
+    const password = generatePassword(14);
+    const hash = await bcrypt.hash(password, 12);
+    await this.prisma.user.update({
       where: { id: userId },
-      data: { role },
+      data: { admin_username: username, admin_password_hash: hash },
     });
-    return { id: u.id.toString(), role: u.role };
+    return { username, password };
   }
 
   // ----------- Superadmin: list admins with activity counts -----------

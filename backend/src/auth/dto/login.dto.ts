@@ -25,8 +25,9 @@ export class AdminLoginDto {
 }
 
 export class UpdateAdminCredsDto {
+  @IsOptional()
   @IsString()
-  current_password!: string;
+  current_password?: string;
 
   @IsOptional()
   @IsString()

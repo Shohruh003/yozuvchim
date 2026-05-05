@@ -60,6 +60,19 @@ def _task_exception_logger(task: asyncio.Task) -> None:
             logger.exception("Background task crashed!", exc_info=exc)
 
 
+async def refresh_admin_cache_loop() -> None:
+    """Re-load the admin cache from DB every 60s so role changes done from the
+    web admin panel propagate to the bot without needing a restart."""
+    logger.info("Admin-cache refresh task started (interval: 60s).")
+    while True:
+        try:
+            async with AsyncSessionLocal() as session:
+                await DB.load_admin_cache(session)
+        except Exception:
+            logger.exception("Admin-cache refresh failed")
+        await asyncio.sleep(60)
+
+
 async def run_watchdog(bot: Bot) -> None:
     """
     Periodic background task:
@@ -199,6 +212,10 @@ async def main() -> None:
     # Start watchdog
     watchdog_task = asyncio.create_task(run_watchdog(bot), name="watchdog")
     watchdog_task.add_done_callback(_task_exception_logger)
+
+    # Keep admin cache in sync with DB role changes
+    admin_refresh_task = asyncio.create_task(refresh_admin_cache_loop(), name="admin_cache_refresh")
+    admin_refresh_task.add_done_callback(_task_exception_logger)
 
     skip_updates = getattr(SETTINGS, "skip_updates", True)
 

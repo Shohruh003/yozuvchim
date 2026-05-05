@@ -520,14 +520,16 @@ class DB:
 
     @staticmethod
     async def load_admin_cache(session: AsyncSession) -> set[int]:
-        """Startup: load all admin IDs (env + DB) into in-memory cache."""
+        """Load all admin IDs (env + DB) into the in-memory cache.
+        Includes both 'admin' and 'superadmin' roles. Safe to call repeatedly.
+        """
         global _admin_cache
-        _admin_cache = set(SETTINGS.admin_ids)
+        new_cache: set[int] = set(SETTINGS.admin_ids)
         res = await session.execute(
-            select(User.id).where(User.role == "admin")
+            select(User.id).where(User.role.in_(["admin", "superadmin"]))
         )
-        db_admins = res.scalars().all()
-        _admin_cache.update(db_admins)
+        new_cache.update(res.scalars().all())
+        _admin_cache = new_cache
         return _admin_cache
 
     @staticmethod

@@ -71,10 +71,6 @@ function CredentialsCard({
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!currentPassword) {
-      toast.error(t('admin.settings.currentPasswordRequired'));
-      return;
-    }
     if (newPassword && newPassword.length < 8) {
       toast.error(t('admin.settings.passwordTooShort'));
       return;
@@ -91,7 +87,8 @@ function CredentialsCard({
     setBusy(true);
     try {
       const r = await apiPost<{ username: string }>('/auth/admin/credentials', {
-        current_password: currentPassword,
+        // Only sent if the user typed it — superadmins may not know it.
+        current_password: currentPassword || undefined,
         new_username: newUsername.trim() || undefined,
         new_password: newPassword || undefined,
       });
@@ -176,7 +173,7 @@ function CredentialsCard({
       )}
 
       <div className="border-t border-slate-200 pt-4">
-        <Field label={t('admin.settings.currentPassword')} hint={t('admin.settings.requiredHint')}>
+        <Field label={t('admin.settings.currentPassword')} hint={t('admin.settings.optionalHint')}>
           <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-300 bg-white">
             <Lock size={16} className="text-slate-400" />
             <input
@@ -185,7 +182,6 @@ function CredentialsCard({
               onChange={(e) => setCurrentPassword(e.target.value)}
               autoComplete="current-password"
               className="flex-1 bg-transparent outline-none text-slate-900"
-              required
             />
             <button
               type="button"
@@ -196,6 +192,9 @@ function CredentialsCard({
             </button>
           </div>
         </Field>
+        <p className="text-xs text-slate-500 mt-1">
+          {t('admin.settings.currentPasswordHint')}
+        </p>
       </div>
 
       <button

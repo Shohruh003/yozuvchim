@@ -15,6 +15,7 @@ import { WebAppLoginDto, TokenLoginDto, RefreshDto, AdminLoginDto, UpdateAdminCr
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from './current-user.decorator';
 import { SuperAdminGuard } from '../admin/superadmin.guard';
+import { AdminGuard } from '../admin/admin.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -106,16 +107,17 @@ export class AuthController {
   }
 
   @Get('admin/credentials')
-  @UseGuards(JwtAuthGuard, SuperAdminGuard)
-  async getAdminCreds() {
-    return { username: await this.auth.getAdminUsername() };
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async getAdminCreds(@CurrentUser() user: any) {
+    return { username: await this.auth.getMyAdminUsername(user.id) };
   }
 
   @Post('admin/credentials')
   @HttpCode(200)
-  @UseGuards(JwtAuthGuard, SuperAdminGuard)
-  async updateAdminCreds(@Body() dto: UpdateAdminCredsDto) {
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async updateAdminCreds(@Body() dto: UpdateAdminCredsDto, @CurrentUser() user: any) {
     return this.auth.updateAdminCreds(
+      user.id,
       dto.current_password,
       dto.new_username,
       dto.new_password,

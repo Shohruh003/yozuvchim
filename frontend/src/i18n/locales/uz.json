@@ -166,6 +166,9 @@
       "promoteAdmin": "Admin qilib tayinlash",
       "promoteSuperadmin": "Superadmin qilib tayinlash",
       "demoteAdmin": "Oddiy foydalanuvchiga aylantirish",
+      "resetPassword": "Parolni qaytadan yaratish",
+      "resetPasswordConfirm": "Yangi parol yaratilsinmi? Hozirgisi ishdan chiqadi.",
+      "passwordReset": "Yangi parol yaratildi",
       "roleUpdated": "Rol yangilandi",
       "pageOf": "Sahifa {{current}} / {{total}}",
       "col": {
@@ -248,6 +251,17 @@
       "afterChange": "O'zgarishdan keyin",
       "confirm": "Tasdiqlash"
     },
+    "creds": {
+      "title": "Admin kirish ma'lumotlari",
+      "subtitle": "Bu parol faqat hozir ko'rsatiladi — yopilgach qaytarib ko'rsatilmaydi",
+      "warning": "Parolni nusxalab yangi adminga yuboring. Yopilgach, qaytarib ko'rsatilmaydi (faqat parolni qaytadan yaratish mumkin).",
+      "login": "Login",
+      "password": "Parol",
+      "copyBoth": "Hammasini nusxalash",
+      "copied": "Nusxalandi",
+      "copyFailed": "Nusxalab bo'lmadi",
+      "done": "Tayyor"
+    },
     "settings": {
       "title": "Sozlamalar",
       "subtitle": "Admin login va parolni boshqaring",
@@ -266,6 +280,7 @@
       "updated": "Yangilandi",
       "error": "Xato",
       "currentPasswordRequired": "Hozirgi parolni kiriting",
+      "currentPasswordHint": "Telegram orqali kirgan superadminlar bo'sh qoldirsa ham bo'ladi.",
       "passwordTooShort": "Parol kamida 8 ta belgi bo'lishi kerak",
       "passwordsDontMatch": "Parollar mos kelmadi",
       "nothingToUpdate": "Yangi login yoki parol kiriting"

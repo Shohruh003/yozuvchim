@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { LoginTokensService } from './login-tokens.service';
 import { SuperAdminGuard } from '../admin/superadmin.guard';
+import { AdminGuard } from '../admin/admin.guard';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { SuperAdminGuard } from '../admin/superadmin.guard';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, LoginTokensService, SuperAdminGuard],
+  providers: [AuthService, JwtStrategy, LoginTokensService, SuperAdminGuard, AdminGuard],
   exports: [AuthService, LoginTokensService],
 })
 export class AuthModule {}

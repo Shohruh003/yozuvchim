@@ -166,6 +166,9 @@
       "promoteAdmin": "Promote to admin",
       "promoteSuperadmin": "Promote to superadmin",
       "demoteAdmin": "Demote to user",
+      "resetPassword": "Reset password",
+      "resetPasswordConfirm": "Generate a new password? The current one will stop working.",
+      "passwordReset": "New password generated",
       "roleUpdated": "Role updated",
       "pageOf": "Page {{current}} / {{total}}",
       "col": {
@@ -247,6 +250,17 @@
       "subtract": "Subtract",
       "afterChange": "After change",
       "confirm": "Confirm"
+    },
+    "creds": {
+      "title": "Admin login details",
+      "subtitle": "This password is shown only once — it cannot be retrieved later",
+      "warning": "Copy the password and send it to the new admin. After this dialog closes, only a password reset can recover access.",
+      "login": "Login",
+      "password": "Password",
+      "copyBoth": "Copy all",
+      "copied": "Copied",
+      "copyFailed": "Copy failed",
+      "done": "Done"
     },
     "settings": {
       "title": "Settings",

@@ -96,10 +96,16 @@ export class AuthService {
   }
 
   /**
-   * Admin/superadmin login via username + password.
-   * Credentials live in the DB (AppSettings); first run seeds them from env.
-   * The issued JWT belongs to the first ID in SUPERADMIN_IDS so the rest of
-   * the app recognises the user.
+   * Web admin login via username + password.
+   *
+   * Lookup order:
+   *   1. Per-user credentials stored on the User row (admin_username +
+   *      admin_password_hash). Each admin/superadmin has their own login,
+   *      auto-generated when promoted.
+   *   2. Shared bootstrap creds (AppSettings, seeded from env). Used for the
+   *      very first superadmin before per-user creds exist.
+   *
+   * Telegram WebApp users don't need this — they auto-login via initData.
    */
   async loginAsAdmin(
     username: string,
@@ -107,11 +113,27 @@ export class AuthService {
     ua?: string,
     ip?: string,
   ): Promise<AuthTokens> {
-    const creds = await this.getAdminCreds();
-    if (!creds) {
-      throw new UnauthorizedException('Admin login is not configured');
+    const trimmed = username.trim();
+
+    // 1) Per-user lookup
+    const user = await this.prisma.user.findUnique({
+      where: { admin_username: trimmed },
+    });
+    if (user && user.admin_password_hash) {
+      const ok = await bcrypt.compare(password, user.admin_password_hash);
+      if (ok) {
+        if (user.role !== 'admin' && user.role !== 'superadmin') {
+          throw new UnauthorizedException('User is no longer an admin');
+        }
+        if (user.is_blocked) throw new UnauthorizedException('User is blocked');
+        return this.issueTokens(user.id, ua, ip);
+      }
     }
-    if (username.trim() !== creds.username) {
+
+    // 2) Shared bootstrap fallback
+    const creds = await this.getAdminCreds();
+    if (!creds) throw new UnauthorizedException('Invalid credentials');
+    if (trimmed !== creds.username) {
       throw new UnauthorizedException('Invalid credentials');
     }
     const ok = await bcrypt.compare(password, creds.hash);
@@ -141,20 +163,60 @@ export class AuthService {
   }
 
   /**
-   * Update the admin login username and/or password.
-   * The current password must be supplied for verification.
+   * Update the *current admin's own* login username and/or password.
+   * If the caller has a per-user admin login (User.admin_username), we update
+   * that row. Otherwise we fall back to the shared bootstrap creds.
    */
   async updateAdminCreds(
-    currentPassword: string,
+    callerId: bigint,
+    currentPassword: string | undefined,
     newUsername?: string,
     newPassword?: string,
   ): Promise<{ ok: true; username: string }> {
+    const me = await this.prisma.user.findUnique({ where: { id: callerId } });
+
+    if (me?.admin_username && me.admin_password_hash) {
+      // Per-user creds path
+      if (currentPassword) {
+        const ok = await bcrypt.compare(currentPassword, me.admin_password_hash);
+        if (!ok) throw new UnauthorizedException('Current password is incorrect');
+      }
+      const username = (newUsername ?? me.admin_username).trim();
+      if (!username) throw new BadRequestException('Username cannot be empty');
+
+      // Username must stay unique
+      if (username !== me.admin_username) {
+        const clash = await this.prisma.user.findUnique({
+          where: { admin_username: username },
+        });
+        if (clash && clash.id !== callerId) {
+          throw new BadRequestException('Username is taken');
+        }
+      }
+
+      let hash = me.admin_password_hash;
+      if (newPassword) {
+        if (newPassword.length < 8) {
+          throw new BadRequestException('Password must be at least 8 characters');
+        }
+        hash = await bcrypt.hash(newPassword, 12);
+      }
+      await this.prisma.user.update({
+        where: { id: callerId },
+        data: { admin_username: username, admin_password_hash: hash },
+      });
+      this.logger.log(`Admin credentials updated for user ${callerId}`);
+      return { ok: true, username };
+    }
+
+    // Fallback: shared bootstrap creds (legacy)
     const creds = await this.getAdminCreds();
     if (!creds) throw new UnauthorizedException('Admin login is not configured');
 
-    const ok = await bcrypt.compare(currentPassword, creds.hash);
-    if (!ok) throw new UnauthorizedException('Current password is incorrect');
-
+    if (currentPassword) {
+      const ok = await bcrypt.compare(currentPassword, creds.hash);
+      if (!ok) throw new UnauthorizedException('Current password is incorrect');
+    }
     const username = (newUsername ?? creds.username).trim();
     if (!username) throw new BadRequestException('Username cannot be empty');
 
@@ -165,7 +227,6 @@ export class AuthService {
       }
       hash = await bcrypt.hash(newPassword, 12);
     }
-
     await this.prisma.appSettings.upsert({
       where: { key: ADMIN_USER_KEY },
       create: { key: ADMIN_USER_KEY, value: username },
@@ -176,12 +237,14 @@ export class AuthService {
       create: { key: ADMIN_HASH_KEY, value: hash },
       update: { value: hash },
     });
-    this.logger.log('Admin credentials updated');
+    this.logger.log('Shared bootstrap admin credentials updated');
     return { ok: true, username };
   }
 
-  /** Read just the username (for showing the current login on the UI). */
-  async getAdminUsername(): Promise<string> {
+  /** Read the caller's web-login username (per-user, falls back to shared). */
+  async getMyAdminUsername(callerId: bigint): Promise<string> {
+    const me = await this.prisma.user.findUnique({ where: { id: callerId } });
+    if (me?.admin_username) return me.admin_username;
     const creds = await this.getAdminCreds();
     return creds?.username ?? '';
   }
