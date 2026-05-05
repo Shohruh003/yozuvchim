@@ -32,6 +32,7 @@ MAX_RETRIES = getattr(SETTINGS, "max_retries", 2)
 RETRY_BACKOFF_SEC = getattr(SETTINGS, "retry_backoff_sec", 2)
 
 RESULTS_CHANNEL = getattr(SETTINGS, "results_channel", None)
+RESULTS_CHANNEL_URL = getattr(SETTINGS, "results_channel_url", "")
 ADMIN_IDS = list(getattr(SETTINGS, "admin_ids", []))
 
 # Active tasks — for cancellation support
@@ -599,6 +600,8 @@ async def process_one_request(req_id: int, bot: Bot):
                 f"🔗 <a href='{dl_link}'>Yuklab olish (Fayl)</a>\n"
                 f"🤖 @{me.username}"
             )
+            if RESULTS_CHANNEL_URL:
+                caption += f"\n📢 <a href='{RESULTS_CHANNEL_URL}'>Bot natijalari kanali</a>"
 
             from .keyboards import get_feedback_keyboard
             await bot.send_document(

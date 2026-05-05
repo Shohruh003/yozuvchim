@@ -77,6 +77,9 @@ class Settings:
     # Results channel: can be channel id (-100...) or @username-like
     # Recommend using numeric channel_id in production.
     results_channel: str = field(default_factory=lambda: _env("RESULTS_CHANNEL", ""))
+    # Public-facing URL for the same channel (https://t.me/... or invite link).
+    # If set, bot includes it in the delivery message under the download link.
+    results_channel_url: str = field(default_factory=lambda: _env("RESULTS_CHANNEL_URL", ""))
 
     # Image API (Unsplash — bepul, slaydlar uchun)
     unsplash_api_key: str = field(default_factory=lambda: _env("UNSPLASH_API_KEY", ""))
