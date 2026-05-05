@@ -15,11 +15,14 @@ void i18n
       en: { translation: en },
       ru: { translation: ru },
     },
+    lng: 'uz',
     fallbackLng: 'uz',
     supportedLngs: ['uz', 'en', 'ru'],
     interpolation: { escapeValue: false },
     detection: {
-      order: ['localStorage', 'navigator'],
+      // Only check localStorage — never fall back to the browser language.
+      // New visitors and the Telegram WebApp always start in Uzbek.
+      order: ['localStorage'],
       caches: ['localStorage'],
       lookupLocalStorage: 'yozuvchim-lang',
     },
