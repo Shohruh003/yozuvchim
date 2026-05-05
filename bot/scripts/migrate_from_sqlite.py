@@ -15,9 +15,35 @@ import json
 import os
 import sqlite3
 import sys
+from datetime import datetime
 from typing import Any
 
 import asyncpg
+
+
+def _parse_datetime(value: Any) -> Any:
+    """SQLite stores datetimes as ISO strings — convert to Python datetime."""
+    if value is None or isinstance(value, datetime):
+        return value
+    s = str(value).strip()
+    if not s:
+        return None
+    # Try common formats with optional microseconds and timezone
+    for fmt in (
+        "%Y-%m-%d %H:%M:%S.%f",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%dT%H:%M:%S.%f",
+        "%Y-%m-%dT%H:%M:%S",
+    ):
+        try:
+            return datetime.strptime(s, fmt)
+        except ValueError:
+            continue
+    try:
+        # Last resort — fromisoformat is permissive about Z and timezone offsets
+        return datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except Exception:
+        return None
 
 
 # Tables and target columns. Source-only columns are auto-filtered.
@@ -34,6 +60,7 @@ TABLES: dict[str, dict[str, Any]] = {
         ],
         "bool_columns": {"has_used_free_trial", "is_blocked"},
         "json_columns": {"academic_context"},
+        "datetime_columns": {"last_active", "vip_expires_at", "created_at", "updated_at"},
         "has_serial": False,
     },
     "requests": {
@@ -50,6 +77,7 @@ TABLES: dict[str, dict[str, Any]] = {
         ],
         "bool_columns": {"is_free", "is_deleted"},
         "json_columns": {"meta_json"},
+        "datetime_columns": {"expires_at", "locked_at", "created_at", "updated_at"},
         "has_serial": True,
     },
     "payments": {
@@ -60,6 +88,7 @@ TABLES: dict[str, dict[str, Any]] = {
         ],
         "bool_columns": set(),
         "json_columns": set(),
+        "datetime_columns": {"created_at"},
         "has_serial": True,
     },
     "tickets": {
@@ -70,14 +99,17 @@ TABLES: dict[str, dict[str, Any]] = {
         ],
         "bool_columns": set(),
         "json_columns": set(),
+        "datetime_columns": {"created_at"},
         "has_serial": True,
     },
 }
 
 
-def _coerce(value: Any, *, is_bool: bool, is_json: bool) -> Any:
+def _coerce(value: Any, *, is_bool: bool, is_json: bool, is_datetime: bool) -> Any:
     if value is None:
         return None
+    if is_datetime:
+        return _parse_datetime(value)
     if is_bool:
         return bool(value)
     if is_json:
@@ -122,6 +154,7 @@ async def migrate_table(
                 row[c],
                 is_bool=c in meta["bool_columns"],
                 is_json=c in meta["json_columns"],
+                is_datetime=c in meta["datetime_columns"],
             )
             for c in common
         ]
