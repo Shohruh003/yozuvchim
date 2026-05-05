@@ -1,0 +1,41 @@
+# Production overlay for servers where the HOST already runs nginx + certbot.
+# Apply on top of docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.host-nginx.yml up -d
+#
+# What this does:
+#   - Skips Caddy entirely (host nginx handles 80/443 + SSL)
+#   - Binds web/backend/db/redis to 127.0.0.1 only (no public ports)
+#   - Sets NODE_ENV=production for stricter cookies
+#
+# Required env vars (in addition to .env):
+#   PUBLIC_DOMAIN  — e.g. bot.shohruh.dev (used for CORS / WEB_APP_URL)
+
+name: yozuvchim
+
+services:
+  postgres:
+    ports: !override
+      - "127.0.0.1:5454:5432"
+
+  redis:
+    ports: !override
+      - "127.0.0.1:6391:6379"
+
+  backend:
+    ports: !override
+      - "127.0.0.1:3010:3000"
+    environment:
+      NODE_ENV: production
+      CORS_ORIGINS: https://${PUBLIC_DOMAIN}
+      WEB_APP_URL: https://${PUBLIC_DOMAIN}
+
+  web:
+    ports: !override
+      - "127.0.0.1:8085:80"
+    build:
+      args:
+        VITE_API_URL: /api
+
+  bot:
+    environment:
+      WEB_APP_URL: https://${PUBLIC_DOMAIN}
