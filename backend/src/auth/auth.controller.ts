@@ -11,9 +11,10 @@ import {
 import type { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
-import { WebAppLoginDto, TokenLoginDto, RefreshDto } from './dto/login.dto';
+import { WebAppLoginDto, TokenLoginDto, RefreshDto, AdminLoginDto, UpdateAdminCredsDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from './current-user.decorator';
+import { SuperAdminGuard } from '../admin/superadmin.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -44,6 +45,23 @@ export class AuthController {
   ) {
     const tokens = await this.auth.loginWithToken(
       dto.token,
+      req.headers['user-agent'],
+      req.ip,
+    );
+    this.setRefreshCookie(res, tokens.refresh_token);
+    return { access_token: tokens.access_token };
+  }
+
+  @Post('admin/login')
+  @HttpCode(200)
+  async adminLogin(
+    @Body() dto: AdminLoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const tokens = await this.auth.loginAsAdmin(
+      dto.username,
+      dto.password,
       req.headers['user-agent'],
       req.ip,
     );
@@ -87,10 +105,29 @@ export class AuthController {
     };
   }
 
+  @Get('admin/credentials')
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  async getAdminCreds() {
+    return { username: await this.auth.getAdminUsername() };
+  }
+
+  @Post('admin/credentials')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard, SuperAdminGuard)
+  async updateAdminCreds(@Body() dto: UpdateAdminCredsDto) {
+    return this.auth.updateAdminCreds(
+      dto.current_password,
+      dto.new_username,
+      dto.new_password,
+    );
+  }
+
   private setRefreshCookie(res: Response, token: string) {
+    const isProd = process.env.NODE_ENV === 'production';
     res.cookie('refresh_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isProd,
+      // 'strict' would block the cookie from a Telegram WebApp redirect; 'lax' is the safe sweet spot.
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/api/auth',

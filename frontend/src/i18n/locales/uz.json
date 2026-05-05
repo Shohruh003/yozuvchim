@@ -1,9 +1,13 @@
 {
+  "common": {
+    "loading": "Yuklanmoqda..."
+  },
   "nav": {
     "profile": "Profil",
     "orders": "Buyurtmalar",
     "payments": "To'lovlar",
-    "newOrder": "Yangi buyurtma"
+    "newOrder": "Yangi buyurtma",
+    "admin": "Admin panel"
   },
   "login": {
     "loading": "Kirilmoqda...",
@@ -78,6 +82,7 @@
     "history": "To'lovlar tarixi",
     "loading": "Yuklanmoqda...",
     "empty": "Tarix bo'sh",
+    "noCards": "Hozircha to'lov uchun karta sozlanmagan. Iltimos, admin bilan bog'laning.",
     "status": {
       "approved": "Tasdiqlangan",
       "pending": "Kutilmoqda",
@@ -105,5 +110,193 @@
     "akademik": "🏛 Akademik",
     "biznes": "💼 Biznes",
     "kreativ": "🎨 Kreativ"
+  },
+  "admin": {
+    "title": "Admin panel",
+    "backToApp": "Saytga qaytish",
+    "logout": "Chiqish",
+    "today": "bugun",
+    "thisWeek": "shu hafta",
+    "thisMonth": "shu oy",
+    "activeUsers": "Faol foydalanuvchilar",
+    "blockedUsers": "Bloklangan",
+    "free": "BEPUL",
+    "nav": {
+      "dashboard": "Boshqaruv paneli",
+      "users": "Foydalanuvchilar",
+      "payments": "To'lovlar",
+      "transactions": "Tranzaksiyalar",
+      "cards": "Kartalar",
+      "admins": "Adminlar",
+      "settings": "Sozlamalar"
+    },
+    "dashboard": {
+      "title": "Boshqaruv paneli",
+      "subtitle": "Umumiy ko'rsatkichlar va statistika"
+    },
+    "stat": {
+      "totalRevenue": "Jami tushum",
+      "users": "Foydalanuvchilar",
+      "orders": "Buyurtmalar",
+      "todayRevenue": "Bugungi tushum"
+    },
+    "chart": {
+      "revenue30d": "Tushum (30 kun)",
+      "userGrowth30d": "Foydalanuvchilar o'sishi (30 kun)",
+      "ordersByType": "Buyurtmalar — turi bo'yicha",
+      "ordersByStatus": "Buyurtmalar — holati bo'yicha"
+    },
+    "users": {
+      "title": "Foydalanuvchilar",
+      "totalCount": "Jami: {{count}}",
+      "searchPlaceholder": "Ism yoki @username bo'yicha izlash",
+      "empty": "Foydalanuvchi topilmadi",
+      "blocked": "Bloklandi",
+      "unblocked": "Blokdan chiqarildi",
+      "block": "Bloklash",
+      "unblock": "Blokdan chiqarish",
+      "viewDetail": "Batafsil",
+      "adjustBalance": "Balansni o'zgartirish",
+      "balancePrompt": "{{name}} ga qancha qo'shish/ayirish (manfiy son ham mumkin):",
+      "balanceUpdated": "Balans yangilandi",
+      "blockConfirmTitle": "Foydalanuvchini bloklash",
+      "blockConfirmMsg": "{{name}} ni rostdan bloklashni xohlaysizmi?",
+      "unblockConfirmTitle": "Blokdan chiqarish",
+      "unblockConfirmMsg": "{{name}} ni blokdan chiqarasizmi?",
+      "promoteAdmin": "Admin qilib tayinlash",
+      "promoteSuperadmin": "Superadmin qilib tayinlash",
+      "demoteAdmin": "Oddiy foydalanuvchiga aylantirish",
+      "roleUpdated": "Rol yangilandi",
+      "pageOf": "Sahifa {{current}} / {{total}}",
+      "col": {
+        "user": "Foydalanuvchi",
+        "role": "Rol",
+        "balance": "Balans",
+        "orders": "Buyurtma",
+        "spent": "Sarflagan",
+        "joined": "Qo'shilgan",
+        "actions": "Amallar"
+      },
+      "detail": {
+        "title": "Foydalanuvchi tafsilotlari",
+        "balance": "Balans",
+        "totalSpent": "Sarflagan",
+        "completed": "Tayyor / jami",
+        "ordersTab": "Buyurtmalar ({{count}})",
+        "paymentsTab": "To'lovlar ({{count}})",
+        "noOrders": "Buyurtma yo'q",
+        "noPayments": "To'lov yo'q"
+      }
+    },
+    "pay": {
+      "title": "Tasdiqlash kutilayotgan to'lovlar",
+      "subtitle": "Foydalanuvchilar yuborgan screenshot lar bo'yicha qaror qabul qiling",
+      "empty": "Hammasi tasdiqlangan!",
+      "viewScreenshot": "Screenshotni ko'rish",
+      "approve": "Tasdiqlash",
+      "reject": "Rad etish",
+      "approved": "Tasdiqlandi va balansga qo'shildi",
+      "rejected": "Rad etildi",
+      "confirmApprove": "{{amount}} so'm balansga qo'shilsinmi?",
+      "confirmReject": "Rostdan ham rad etmoqchimisiz?",
+      "approveTitle": "To'lovni tasdiqlash",
+      "amountHint": "Chekdagi haqiqiy summani so'mda kiriting:",
+      "approveAndCredit": "Tasdiqlash — {{amount}} so'm"
+    },
+    "tx": {
+      "title": "Tranzaksiyalar tarixi",
+      "subtitle": "Sana va vaqt bo'yicha filterlab tushumni ko'ring",
+      "from": "Boshlanish (sana, soat)",
+      "to": "Tugash (sana, soat)",
+      "status": "Holati",
+      "quick": "Tezkor tanlov",
+      "totalIncome": "Jami tushum",
+      "approvedCount": "Tasdiqlangan to'lovlar",
+      "totalCount": "Jami yozuvlar",
+      "chart": "Tushum ({{bucket}})",
+      "income": "Tushum",
+      "empty": "Tanlangan davrda yozuv yo'q",
+      "bucket": {
+        "hour": "soatlik",
+        "day": "kunlik"
+      },
+      "statusOpt": {
+        "all": "Hammasi",
+        "approved": "Tasdiqlangan",
+        "pending": "Kutilmoqda",
+        "rejected": "Rad etilgan"
+      },
+      "col": {
+        "user": "Foydalanuvchi",
+        "invoice": "Invoice",
+        "amount": "Summa",
+        "status": "Holati",
+        "date": "Sana"
+      }
+    },
+    "admins": {
+      "title": "Adminlar faoliyati",
+      "subtitle": "Adminlar bot orqali yaratgan buyurtmalarni kuzatib boring",
+      "empty": "Hozircha admin yo'q",
+      "orders": "Buyurtma",
+      "recentOrders": "So'nggi buyurtmalar",
+      "noActivity": "Faollik yo'q"
+    },
+    "balance": {
+      "add": "Qo'shish",
+      "subtract": "Ayirish",
+      "afterChange": "O'zgarishdan keyin",
+      "confirm": "Tasdiqlash"
+    },
+    "settings": {
+      "title": "Sozlamalar",
+      "subtitle": "Admin login va parolni boshqaring",
+      "superadminOnly": "Bu bo'lim faqat superadminlar uchun",
+      "credsTitle": "Login va parol",
+      "currentLogin": "Hozirgi login",
+      "newUsername": "Yangi login",
+      "newPassword": "Yangi parol",
+      "confirmPassword": "Parolni qaytaring",
+      "currentPassword": "Hozirgi parol",
+      "passwordPlaceholder": "Kamida 8 ta belgi",
+      "optionalHint": "ixtiyoriy",
+      "requiredHint": "majburiy",
+      "save": "Saqlash",
+      "saving": "Saqlanmoqda...",
+      "updated": "Yangilandi",
+      "error": "Xato",
+      "currentPasswordRequired": "Hozirgi parolni kiriting",
+      "passwordTooShort": "Parol kamida 8 ta belgi bo'lishi kerak",
+      "passwordsDontMatch": "Parollar mos kelmadi",
+      "nothingToUpdate": "Yangi login yoki parol kiriting"
+    },
+    "cards": {
+      "title": "To'lov kartalari",
+      "subtitle": "Foydalanuvchilarga ko'rsatiladigan karta ma'lumotlarini boshqaring",
+      "add": "Yangi karta",
+      "addFirst": "Birinchi kartani qo'shish",
+      "addTitle": "Yangi karta qo'shish",
+      "editTitle": "Kartani tahrirlash",
+      "empty": "Hech qanday karta yo'q",
+      "number": "Karta raqami",
+      "holder": "Karta egasi",
+      "bankLabel": "Bank",
+      "optional": "ixtiyoriy",
+      "sortOrder": "Tartib raqami",
+      "status": "Holat",
+      "activeFlag": "Faol",
+      "inactive": "Faolsiz",
+      "edit": "Tahrirlash",
+      "delete": "O'chirish",
+      "activate": "Faollashtirish",
+      "deactivate": "Faolsizlantirish",
+      "save": "Saqlash",
+      "cancel": "Bekor qilish",
+      "added": "Karta qo'shildi",
+      "updated": "Karta yangilandi",
+      "deleted": "Karta o'chirildi",
+      "confirmDelete": "{{number}} kartani o'chirishni xohlaysizmi?",
+      "requiredFields": "Karta raqami va egasini to'ldiring"
+    }
   }
 }

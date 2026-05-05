@@ -1,35 +1,39 @@
 {
+  "common": {
+    "loading": "Загрузка..."
+  },
   "nav": {
     "profile": "Профиль",
     "orders": "Заказы",
     "payments": "Платежи",
-    "newOrder": "Новый заказ"
+    "newOrder": "Новый заказ",
+    "admin": "Админ-панель"
   },
   "login": {
     "loading": "Вход...",
     "redirecting": "Перенаправление...",
-    "openInTelegram": "Пожалуйста, откройте через Telegram бота.",
-    "tokenInvalid": "Недействительный или истёкший токен."
+    "openInTelegram": "Пожалуйста, откройте через Telegram-бот.",
+    "tokenInvalid": "Токен недействителен или истёк."
   },
   "profile": {
     "balance": "Баланс счёта",
     "topUp": "+ Пополнить",
     "stats": {
       "orders": "Заказы",
-      "completed": "Завершённые",
+      "completed": "Выполнено",
       "documents": "Документы",
       "spent": "Потрачено"
     },
     "recentOrders": "Последние заказы",
-    "viewAll": "Все",
-    "noOrders": "Нет заказов",
+    "viewAll": "Все заказы",
+    "noOrders": "Заказов пока нет",
     "createNew": "+ Создать заказ"
   },
   "orders": {
     "title": "Мои заказы",
     "newOrderBtn": "+ Новый заказ",
     "loading": "Загрузка...",
-    "empty": "Заказов нет",
+    "empty": "Заказов пока нет",
     "downloadable": "📥 Готов к скачиванию",
     "pages": "стр."
   },
@@ -37,19 +41,19 @@
     "title": "Новый заказ",
     "selectType": "Выберите тип документа",
     "back": "← Назад",
-    "topic": "Тема",
+    "topic": "Тема / название",
     "topicPlaceholder": "Введите тему...",
     "language": "Язык",
-    "size": "Объём (страниц/слайдов)",
+    "size": "Объём (стр./слайд)",
     "subject": "Предмет",
     "presentationStyle": "Стиль презентации",
-    "slideTemplate": "Шаблон слайдов",
-    "submit": "Заказать",
+    "slideTemplate": "Шаблон слайда",
+    "submit": "Оформить",
     "submitting": "Отправка...",
     "created": "Заказ создан",
     "error": "Ошибка",
     "priceLabel": "Цена",
-    "freeTrialBadge": "Ваш первый заказ бесплатно!",
+    "freeTrialBadge": "Ваш первый заказ — бесплатно!",
     "balanceLabel": "Баланс",
     "insufficientBalance": "Недостаточно средств",
     "topUpBalance": "Пополнить баланс",
@@ -70,17 +74,18 @@
     "download": "📥 Скачать"
   },
   "payments": {
-    "title": "Пополнение баланса",
-    "info": "Реквизиты",
+    "title": "Пополнить баланс",
+    "info": "Реквизиты оплаты",
     "cardNumber": "Номер карты",
-    "cardHolder": "Владелец",
-    "instruction": "После оплаты отправьте скриншот боту. Сумма зачисляется после одобрения администратора.",
+    "cardHolder": "Владелец карты",
+    "instruction": "После оплаты отправьте скриншот в бот. Сумма будет добавлена на баланс после подтверждения админом.",
     "history": "История платежей",
     "loading": "Загрузка...",
     "empty": "История пуста",
+    "noCards": "Карты для оплаты пока не настроены. Свяжитесь с админом.",
     "status": {
-      "approved": "Одобрено",
-      "pending": "В ожидании",
+      "approved": "Подтверждено",
+      "pending": "Ожидание",
       "rejected": "Отклонено"
     }
   },
@@ -94,8 +99,8 @@
   "docTypes": {
     "article": "Статья",
     "taqdimot": "Презентация",
-    "coursework": "Курсовая работа",
-    "independent": "Самостоятельная работа",
+    "coursework": "Курсовая",
+    "independent": "Самост. работа",
     "thesis": "Тезис",
     "diploma": "Диплом",
     "dissertation": "Диссертация",
@@ -103,7 +108,195 @@
   },
   "pptStyle": {
     "akademik": "🏛 Академический",
-    "biznes": "💼 Бизнес",
+    "biznes": "💼 Деловой",
     "kreativ": "🎨 Креативный"
+  },
+  "admin": {
+    "title": "Админ-панель",
+    "backToApp": "Вернуться в приложение",
+    "logout": "Выйти",
+    "today": "сегодня",
+    "thisWeek": "за неделю",
+    "thisMonth": "за месяц",
+    "activeUsers": "Активные пользователи",
+    "blockedUsers": "Заблокированные",
+    "free": "БЕСПЛАТНО",
+    "nav": {
+      "dashboard": "Панель",
+      "users": "Пользователи",
+      "payments": "Платежи",
+      "transactions": "Транзакции",
+      "cards": "Карты",
+      "admins": "Админы",
+      "settings": "Настройки"
+    },
+    "dashboard": {
+      "title": "Панель управления",
+      "subtitle": "Общие показатели и статистика"
+    },
+    "stat": {
+      "totalRevenue": "Общий доход",
+      "users": "Пользователи",
+      "orders": "Заказы",
+      "todayRevenue": "Доход за сегодня"
+    },
+    "chart": {
+      "revenue30d": "Доход (30 дней)",
+      "userGrowth30d": "Прирост пользователей (30 дней)",
+      "ordersByType": "Заказы по типам",
+      "ordersByStatus": "Заказы по статусу"
+    },
+    "users": {
+      "title": "Пользователи",
+      "totalCount": "Всего: {{count}}",
+      "searchPlaceholder": "Поиск по имени или @username",
+      "empty": "Пользователи не найдены",
+      "blocked": "Заблокировано",
+      "unblocked": "Разблокировано",
+      "block": "Заблокировать",
+      "unblock": "Разблокировать",
+      "viewDetail": "Подробнее",
+      "adjustBalance": "Изменить баланс",
+      "balancePrompt": "Сколько добавить/вычесть для {{name}} (можно отрицательное):",
+      "balanceUpdated": "Баланс обновлён",
+      "blockConfirmTitle": "Заблокировать пользователя",
+      "blockConfirmMsg": "Заблокировать {{name}}?",
+      "unblockConfirmTitle": "Разблокировать пользователя",
+      "unblockConfirmMsg": "Разблокировать {{name}}?",
+      "promoteAdmin": "Назначить администратором",
+      "promoteSuperadmin": "Назначить суперадминистратором",
+      "demoteAdmin": "Сделать обычным пользователем",
+      "roleUpdated": "Роль обновлена",
+      "pageOf": "Стр. {{current}} / {{total}}",
+      "col": {
+        "user": "Пользователь",
+        "role": "Роль",
+        "balance": "Баланс",
+        "orders": "Заказы",
+        "spent": "Потрачено",
+        "joined": "Присоединился",
+        "actions": "Действия"
+      },
+      "detail": {
+        "title": "Профиль пользователя",
+        "balance": "Баланс",
+        "totalSpent": "Потрачено",
+        "completed": "Готово / всего",
+        "ordersTab": "Заказы ({{count}})",
+        "paymentsTab": "Платежи ({{count}})",
+        "noOrders": "Заказов нет",
+        "noPayments": "Платежей нет"
+      }
+    },
+    "pay": {
+      "title": "Платежи на подтверждении",
+      "subtitle": "Принимайте решения по скриншотам, отправленным пользователями",
+      "empty": "Всё обработано!",
+      "viewScreenshot": "Посмотреть скриншот",
+      "approve": "Подтвердить",
+      "reject": "Отклонить",
+      "approved": "Подтверждено и зачислено",
+      "rejected": "Отклонено",
+      "confirmApprove": "Зачислить {{amount}} сум на баланс?",
+      "confirmReject": "Точно отклонить этот платёж?",
+      "approveTitle": "Подтвердить платёж",
+      "amountHint": "Введите реальную сумму с чека (сум):",
+      "approveAndCredit": "Подтвердить — {{amount}} сум"
+    },
+    "tx": {
+      "title": "История транзакций",
+      "subtitle": "Фильтруйте доход по дате и времени",
+      "from": "С (дата, время)",
+      "to": "По (дата, время)",
+      "status": "Статус",
+      "quick": "Быстрый диапазон",
+      "totalIncome": "Общий доход",
+      "approvedCount": "Подтверждённые платежи",
+      "totalCount": "Всего записей",
+      "chart": "Доход ({{bucket}})",
+      "income": "Доход",
+      "empty": "Записей в этом диапазоне нет",
+      "bucket": {
+        "hour": "по часам",
+        "day": "по дням"
+      },
+      "statusOpt": {
+        "all": "Все",
+        "approved": "Подтверждённые",
+        "pending": "Ожидание",
+        "rejected": "Отклонённые"
+      },
+      "col": {
+        "user": "Пользователь",
+        "invoice": "Счёт",
+        "amount": "Сумма",
+        "status": "Статус",
+        "date": "Дата"
+      }
+    },
+    "admins": {
+      "title": "Активность администраторов",
+      "subtitle": "Отслеживайте заказы, созданные админами через бот",
+      "empty": "Админов пока нет",
+      "orders": "Заказы",
+      "recentOrders": "Последние заказы",
+      "noActivity": "Активности нет"
+    },
+    "balance": {
+      "add": "Добавить",
+      "subtract": "Вычесть",
+      "afterChange": "После изменения",
+      "confirm": "Подтвердить"
+    },
+    "settings": {
+      "title": "Настройки",
+      "subtitle": "Управляйте логином и паролем админа",
+      "superadminOnly": "Этот раздел только для суперадминов",
+      "credsTitle": "Логин и пароль",
+      "currentLogin": "Текущий логин",
+      "newUsername": "Новый логин",
+      "newPassword": "Новый пароль",
+      "confirmPassword": "Подтвердите пароль",
+      "currentPassword": "Текущий пароль",
+      "passwordPlaceholder": "Не менее 8 символов",
+      "optionalHint": "необязательно",
+      "requiredHint": "обязательно",
+      "save": "Сохранить",
+      "saving": "Сохранение...",
+      "updated": "Обновлено",
+      "error": "Ошибка",
+      "currentPasswordRequired": "Введите текущий пароль",
+      "passwordTooShort": "Пароль должен быть не менее 8 символов",
+      "passwordsDontMatch": "Пароли не совпадают",
+      "nothingToUpdate": "Введите новый логин или пароль"
+    },
+    "cards": {
+      "title": "Платёжные карты",
+      "subtitle": "Управляйте реквизитами карт, видимыми пользователям",
+      "add": "Новая карта",
+      "addFirst": "Добавить первую карту",
+      "addTitle": "Добавление карты",
+      "editTitle": "Редактирование карты",
+      "empty": "Карт пока нет",
+      "number": "Номер карты",
+      "holder": "Владелец",
+      "bankLabel": "Банк",
+      "optional": "необязательно",
+      "sortOrder": "Порядок",
+      "status": "Статус",
+      "activeFlag": "Активна",
+      "inactive": "Неактивна",
+      "edit": "Изменить",
+      "delete": "Удалить",
+      "activate": "Активировать",
+      "deactivate": "Деактивировать",
+      "save": "Сохранить",
+      "cancel": "Отмена",
+      "added": "Карта добавлена",
+      "updated": "Карта обновлена",
+      "deleted": "Карта удалена",
+      "confirmDelete": "Удалить карту {{number}}?",
+      "requiredFields": "Заполните номер и владельца карты"
+    }
   }
 }

@@ -610,6 +610,17 @@ async def finish_wiz(message: Message, state: FSMContext, user_id: int):
         if not is_admin and not is_free_trial:
             if u.balance < total_price:
                 from .payments_flow import PaymentWizard
+                cards = await DB.list_active_payment_cards(session)
+                card_lines = (
+                    "\n".join(
+                        f"Karta: <code>{html.escape(c.number)}</code>"
+                        f"{(' — <i>' + html.escape(c.bank) + '</i>') if c.bank else ''}\n"
+                        f"Egasi: <b>{html.escape(c.holder)}</b>"
+                        for c in cards
+                    )
+                    if cards
+                    else "⚠️ Karta sozlanmagan. Admin bilan bog'laning."
+                )
                 text = (
                     f"⚠️ <b>Mablag' yetarli emas!</b>\n\n"
                     f"Mavzu: <code>{html.escape(data.get('title', ''))}</code>\n"
@@ -618,8 +629,7 @@ async def finish_wiz(message: Message, state: FSMContext, user_id: int):
                     f"Hisobingiz: {f'{u.balance:,}': >10} so'm\n"
                     f"Yetmayapti: {f'{total_price - u.balance:,}': >10} so'm\n\n"
                     "💳 <b>Hisobni to'ldirish uchun:</b>\n"
-                    f"Karta: <code>{html.escape(SETTINGS.card_details)}</code>\n"
-                    f"Egasi: <b>{html.escape(SETTINGS.card_holder)}</b>\n\n"
+                    f"{card_lines}\n\n"
                     "To'lov qilganingizdan so'ng, <b>chekni (skrinshot) shu yerga yuboring</b>.\n"
                     "Admin tasdiqlashi bilan balansingiz to'ldiriladi."
                 )

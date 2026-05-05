@@ -1,0 +1,63 @@
+# Production overlay — apply on top of docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# What this changes vs. dev:
+#   - Adds Caddy reverse proxy with automatic HTTPS (Let's Encrypt)
+#   - Stops exposing backend / web / postgres / redis on host ports (except Caddy 80/443)
+#   - Pins NODE_ENV=production for stricter cookies
+#
+# Required env vars in addition to .env:
+#   PUBLIC_DOMAIN   — your domain (e.g. yozuvchim.uz)
+#   ACME_EMAIL      — email for Let's Encrypt notifications
+
+name: yozuvchim
+
+services:
+  postgres:
+    ports: !reset []   # don't expose to host
+
+  redis:
+    ports: !reset []   # don't expose to host
+
+  backend:
+    ports: !reset []   # only Caddy reaches it via the network
+    environment:
+      NODE_ENV: production
+      # Cookie / CORS hardening
+      CORS_ORIGINS: https://${PUBLIC_DOMAIN}
+      WEB_APP_URL: https://${PUBLIC_DOMAIN}
+
+  web:
+    ports: !reset []   # only Caddy reaches it
+    build:
+      args:
+        VITE_API_URL: /api
+
+  bot:
+    environment:
+      WEB_APP_URL: https://${PUBLIC_DOMAIN}
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: yozuvchim_caddy
+    restart: unless-stopped
+    depends_on:
+      - web
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - yozuvchim_net
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,37 @@
+{
+	# Global options
+	email {$ACME_EMAIL}
+	# Use the staging endpoint while testing to avoid Let's Encrypt rate limits.
+	# Comment this out for production:
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+{$PUBLIC_DOMAIN} {
+	encode zstd gzip
+
+	# API → NestJS backend
+	handle /api/* {
+		reverse_proxy backend:3000
+	}
+
+	# Static frontend (built React) served by the nginx container
+	handle {
+		reverse_proxy web:80
+	}
+
+	# Hardening headers
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		# Drop the default Caddy server header
+		-Server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { X } from 'lucide-react';
+import { X, Shield } from 'lucide-react';
 
+import { apiGet } from '@/lib/api';
 import { LangSwitcher } from './LangSwitcher';
 
 interface SideMenuProps {
@@ -24,6 +25,14 @@ const DOC_TYPES = [
 export function SideMenu({ open, onClose }: SideMenuProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [role, setRole] = useState<string>('');
+
+  useEffect(() => {
+    if (!open) return;
+    apiGet<{ role: string }>('/users/me').then((u) => setRole(u.role)).catch(() => null);
+  }, [open]);
+
+  const isAdmin = role === 'admin' || role === 'superadmin';
 
   // Lock body scroll while open
   useEffect(() => {
@@ -89,12 +98,22 @@ export function SideMenu({ open, onClose }: SideMenuProps) {
           ))}
         </div>
 
-        {/* Footer: language switcher */}
-        <div className="border-t border-slate-200 p-4">
-          <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
-            Til / Language
-          </p>
-          <LangSwitcher />
+        {/* Footer: optional admin link + language switcher */}
+        <div className="border-t border-slate-200 p-4 space-y-3">
+          {isAdmin && (
+            <button
+              onClick={() => { onClose(); navigate('/admin'); }}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 text-white font-medium text-sm hover:opacity-95"
+            >
+              <Shield size={16} /> {t('nav.admin')}
+            </button>
+          )}
+          <div>
+            <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
+              Til / Language
+            </p>
+            <LangSwitcher />
+          </div>
         </div>
       </aside>
     </div>

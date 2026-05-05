@@ -32,7 +32,9 @@ export default function ProfilePage() {
 
   useEffect(() => {
     apiGet<Me>('/users/me').then(setMe).catch(() => null);
-    apiGet<OrderRow[]>('/orders?limit=5').then(setOrders).catch(() => []);
+    apiGet<{ items: OrderRow[] }>('/orders?limit=5')
+      .then((r) => setOrders(r.items))
+      .catch(() => setOrders([]));
   }, []);
 
   return (

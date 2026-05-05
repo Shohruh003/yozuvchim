@@ -34,13 +34,21 @@ export class OrdersService {
   ) {}
 
   // ----------- list -----------
-  async list(userId: bigint, limit = 50) {
-    const items = await this.prisma.request.findMany({
-      where: { user_id: userId, is_deleted: false },
-      orderBy: { created_at: 'desc' },
-      take: Math.min(Math.max(limit, 1), 100),
-    });
-    return items.map((o) => this.serialize(o));
+  async list(userId: bigint, limit = 20, offset = 0) {
+    const where = { user_id: userId, is_deleted: false };
+    const [items, total] = await Promise.all([
+      this.prisma.request.findMany({
+        where,
+        orderBy: { created_at: 'desc' },
+        take: Math.min(Math.max(limit, 1), 100),
+        skip: Math.max(offset, 0),
+      }),
+      this.prisma.request.count({ where }),
+    ]);
+    return {
+      total,
+      items: items.map((o) => this.serialize(o)),
+    };
   }
 
   async getOne(userId: bigint, id: number) {
@@ -82,11 +90,13 @@ export class OrdersService {
       if (!user) throw new NotFoundException('User not found');
       if (user.is_blocked) throw new ForbiddenException('User is blocked');
 
+      // Admins (and superadmins) always use the bot for free
+      const isAdmin = user.role === 'admin' || user.role === 'superadmin';
       // Free trial: first ever order is free
-      const useFreeTrial = !user.has_used_free_trial;
-      const finalPrice = useFreeTrial ? 0 : serverPrice;
+      const useFreeTrial = !isAdmin && !user.has_used_free_trial;
+      const finalPrice = isAdmin || useFreeTrial ? 0 : serverPrice;
 
-      if (!useFreeTrial && user.balance < serverPrice) {
+      if (!isAdmin && !useFreeTrial && user.balance < serverPrice) {
         throw new BadRequestException(
           `Yetarli mablag' yo'q. Kerak: ${serverPrice.toLocaleString('uz-UZ')} so'm, balansda: ${user.balance.toLocaleString('uz-UZ')} so'm`,
         );
@@ -112,12 +122,18 @@ export class OrdersService {
           length: String(length),
           price: finalPrice,
           status: 'queued',
-          is_free: useFreeTrial,
+          is_free: isAdmin || useFreeTrial,
           meta_json: meta,
         },
       });
 
-      if (useFreeTrial) {
+      if (isAdmin) {
+        // Track admin order count without touching balance / free-trial flag
+        await tx.user.update({
+          where: { id: userId },
+          data: { total_orders: { increment: 1 } },
+        });
+      } else if (useFreeTrial) {
         await tx.user.update({
           where: { id: userId },
           data: { has_used_free_trial: true, total_orders: { increment: 1 } },

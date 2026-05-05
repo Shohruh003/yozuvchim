@@ -68,12 +68,10 @@ class Settings:
 
     # Payments / Plans
     bot_username: str = field(default_factory=lambda: _env("BOT_USERNAME", ""))
-    card_details: str = field(default_factory=lambda: _env("CARD_DETAILS", "5614 6812 1506 0850 - Humo"))
-    card_holder: str = field(default_factory=lambda: _env("CARD_HOLDER", "Imomaliyev Abdurasul"))
     currency: str = field(default_factory=lambda: _env("CURRENCY", "UZS"))
 
-    # Admin / Access
-    admin_ids: FrozenSet[int] = field(default_factory=lambda: _parse_int_set(_env("ADMIN_IDS", "")))
+    # Admin / Access — superadmins from env (irrevocable bootstrap admins)
+    admin_ids: FrozenSet[int] = field(default_factory=lambda: _parse_int_set(_env("SUPERADMIN_IDS", "")))
     required_channels: Tuple[str, ...] = field(default_factory=lambda: _parse_str_tuple(_env("REQUIRED_CHANNELS", "")))
 
     # Results channel: can be channel id (-100...) or @username-like

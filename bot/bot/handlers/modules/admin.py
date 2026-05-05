@@ -858,27 +858,35 @@ async def process_payment_amount(message: Message, state: FSMContext, bot: Bot) 
         return
 
     async with AsyncSessionLocal() as session:
-        # 1. Update user balance
+        # 1. Find the SPECIFIC pending payment FIRST — don't credit balance until
+        #    we've confirmed the payment is still pending (it might've been
+        #    approved/rejected via the web admin panel meanwhile).
+        res = await session.execute(
+            select(Payment).where(
+                Payment.user_id == uid,
+                Payment.invoice_id == inv,
+                Payment.status == "pending",
+            )
+        )
+        p = res.scalar_one_or_none()
+        if not p:
+            await message.answer(
+                "⚠️ Bu to'lov allaqachon ko'rib chiqilgan (boshqa admin yoki web panel orqali). "
+                "Hech qanday o'zgarish kiritilmadi.",
+            )
+            await state.clear()
+            return
+
+        # 2. Now credit balance and mark as approved in the same transaction.
         success = await DB.update_balance(session, uid, amount)
         if not success:
             await message.answer("❌ Foydalanuvchi topilmadi.")
             await state.clear()
             return
-        
-        # 2. Find and update the SPECIFIC pending payment
-        res = await session.execute(
-            select(Payment).where(
-                Payment.user_id == uid,
-                Payment.invoice_id == inv, # FIXED: filter by specific invoice
-                Payment.status == "pending"
-            )
-        )
-        p = res.scalar_one_or_none()
-        
-        if p:
-            p.status = "approved"
-            p.amount = amount
-            await session.commit()
+
+        p.status = "approved"
+        p.amount = amount
+        await session.commit()
 
     await message.answer(f"✅ To'lov tasdiqlandi: <b>{amount:,}</b> so'm qo'shildi.", parse_mode="HTML")
 
@@ -928,14 +936,25 @@ async def cb_payno(call: CallbackQuery, state: FSMContext, bot: Bot) -> None:
         res = await session.execute(
             select(Payment).where(
                 Payment.user_id == uid,
-                Payment.invoice_id == inv, # FIXED: Filter by specific invoice
-                Payment.status == "pending"
+                Payment.invoice_id == inv,
             )
         )
         p = res.scalar_one_or_none()
-        if p:
-            p.status = "rejected"
-            await session.commit()
+        if not p:
+            await call.answer("⚠️ To'lov topilmadi", show_alert=True)
+            return
+        if p.status != "pending":
+            # Already processed (by another admin or via the web panel).
+            await call.answer(
+                "⚠️ Bu to'lov allaqachon ko'rib chiqilgan!",
+                show_alert=True,
+            )
+            with suppress(Exception):
+                await call.message.edit_reply_markup(reply_markup=None)
+            return
+
+        p.status = "rejected"
+        await session.commit()
 
     await call.message.edit_reply_markup(reply_markup=None)
     await call.message.answer(f"❌ To'lov rad etildi (User: {uid}).")

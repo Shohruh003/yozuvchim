@@ -55,10 +55,10 @@ export default function NewOrderPage() {
   const [submitting, setSubmitting] = useState(false);
   const [length, setLength] = useState(5);
   const [quote, setQuote] = useState<{ price: number } | null>(null);
-  const [me, setMe] = useState<{ balance: number; has_used_free_trial: boolean } | null>(null);
+  const [me, setMe] = useState<{ balance: number; has_used_free_trial: boolean; role: string } | null>(null);
 
   useEffect(() => {
-    apiGet<{ balance: number; has_used_free_trial: boolean }>('/users/me')
+    apiGet<{ balance: number; has_used_free_trial: boolean; role: string }>('/users/me')
       .then(setMe)
       .catch(() => null);
   }, []);
@@ -242,13 +242,21 @@ export default function NewOrderPage() {
         {/* Price + balance summary */}
         {(() => {
           if (!me) return null;
-          const willUseFreeTrial = !me.has_used_free_trial;
+          const isAdmin = me.role === 'admin' || me.role === 'superadmin';
+          const willUseFreeTrial = !isAdmin && !me.has_used_free_trial;
+          const isFree = isAdmin || willUseFreeTrial;
           const price = quote?.price ?? 0;
-          const finalPrice = willUseFreeTrial ? 0 : price;
-          const insufficient = !willUseFreeTrial && me.balance < price;
+          const finalPrice = isFree ? 0 : price;
+          const insufficient = !isFree && me.balance < price;
 
           return (
             <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 space-y-3">
+              {isAdmin && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-violet-50 text-violet-800 text-sm border border-violet-200">
+                  <Sparkles size={16} />
+                  <span className="font-medium">Admin — bepul</span>
+                </div>
+              )}
               {willUseFreeTrial && (
                 <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 text-emerald-800 text-sm border border-emerald-200">
                   <Sparkles size={16} />
@@ -258,7 +266,7 @@ export default function NewOrderPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-slate-500">{t('newOrder.priceLabel')}</span>
                 <span className="text-lg font-bold">
-                  {willUseFreeTrial ? (
+                  {isFree ? (
                     <>
                       <span className="line-through text-slate-400 text-base font-normal mr-2">
                         {formatNumber(price)} so'm
@@ -272,14 +280,16 @@ export default function NewOrderPage() {
                   )}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-500 flex items-center gap-1.5">
-                  <Wallet size={14} /> {t('newOrder.balanceLabel')}
-                </span>
-                <span className={insufficient ? 'text-rose-600 font-semibold' : 'text-slate-700'}>
-                  {formatNumber(me.balance)} so'm
-                </span>
-              </div>
+              {!isAdmin && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500 flex items-center gap-1.5">
+                    <Wallet size={14} /> {t('newOrder.balanceLabel')}
+                  </span>
+                  <span className={insufficient ? 'text-rose-600 font-semibold' : 'text-slate-700'}>
+                    {formatNumber(me.balance)} so'm
+                  </span>
+                </div>
+              )}
               {insufficient && (
                 <Link
                   to="/payments"
@@ -294,7 +304,13 @@ export default function NewOrderPage() {
 
         <button
           type="submit"
-          disabled={submitting || (me ? !me.has_used_free_trial ? false : (quote && me.balance < quote.price) || false : false)}
+          disabled={(() => {
+            if (submitting) return true;
+            if (!me) return false;
+            const isAdmin = me.role === 'admin' || me.role === 'superadmin';
+            if (isAdmin || !me.has_used_free_trial) return false;
+            return Boolean(quote && me.balance < quote.price);
+          })()}
           className="w-full px-5 py-3 rounded-xl bg-brand-500 text-white font-semibold hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? t('newOrder.submitting') : t('newOrder.submit')}

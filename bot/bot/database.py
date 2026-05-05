@@ -264,6 +264,35 @@ class AppSettings(Base):
     value: Mapped[str] = mapped_column(String(256), default="", server_default="")
 
 
+class PaymentAdminMessage(Base):
+    """Telegram message IDs sent to admins for a payment notification."""
+    __tablename__ = "payment_admin_messages"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    payment_id: Mapped[int] = mapped_column(Integer)
+    invoice_id: Mapped[str] = mapped_column(String(64))
+    admin_id: Mapped[int] = mapped_column(BigInteger)
+    message_id: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class PaymentCard(Base):
+    """Bank cards shown to users on the top-up flow.
+
+    Owned by the NestJS backend's Prisma schema; we just read from it here.
+    """
+    __tablename__ = "payment_cards"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    number: Mapped[str] = mapped_column(String(32))
+    holder: Mapped[str] = mapped_column(String(128))
+    bank: Mapped[str] = mapped_column(String(64), default="", server_default="")
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    sort_order: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 # -------------------------
 # Engine / Session
 # -------------------------
@@ -529,6 +558,16 @@ class DB:
         """Return all users with admin role."""
         res = await session.execute(
             select(User).where(User.role == "admin")
+        )
+        return list(res.scalars().all())
+
+    @staticmethod
+    async def list_active_payment_cards(session: AsyncSession) -> list[PaymentCard]:
+        """Return active payment cards in display order."""
+        res = await session.execute(
+            select(PaymentCard)
+            .where(PaymentCard.is_active.is_(True))
+            .order_by(PaymentCard.sort_order.asc(), PaymentCard.id.asc())
         )
         return list(res.scalars().all())
 

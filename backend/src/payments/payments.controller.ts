@@ -14,11 +14,19 @@ export class PaymentsController {
   ) {}
 
   @Get('info')
-  info() {
+  async info() {
+    const cards = await this.prisma.paymentCard.findMany({
+      where: { is_active: true },
+      orderBy: [{ sort_order: 'asc' }, { id: 'asc' }],
+    });
     return {
-      card_number: this.config.get<string>('CARD_DETAILS') || '',
-      card_holder: this.config.get<string>('CARD_HOLDER') || '',
       currency: this.config.get<string>('CURRENCY') || 'UZS',
+      cards: cards.map((c) => ({
+        id: c.id,
+        number: c.number,
+        holder: c.holder,
+        bank: c.bank,
+      })),
     };
   }
 

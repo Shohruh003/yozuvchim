@@ -212,14 +212,31 @@ async def cmd_payment(message: Message, state: FSMContext):
         await state.clear()
     from .payments_flow import PaymentWizard
     await state.set_state(PaymentWizard.waiting_for_screenshot)
-    text = (
-        "💳 <b>Hisobni to'ldirish</b>\n\n"
-        f"Karta raqam: <code>{html.escape(SETTINGS.card_details)}</code>\n"
-        f"Egasining ismi: <b>{html.escape(SETTINGS.card_holder)}</b>\n\n"
-        "To'lov qilganingizdan so'ng, chekni (skrinshot) shu yerga yuboring.\n"
+
+    # Pull card details from the DB (managed via the admin panel).
+    async with AsyncSessionLocal() as session:
+        cards = await DB.list_active_payment_cards(session)
+
+    if not cards:
+        await message.answer(
+            "⚠️ Hozircha to'lov uchun karta sozlanmagan. "
+            "Iltimos, admin bilan bog'laning.",
+            parse_mode="HTML",
+        )
+        return
+
+    lines = ["💳 <b>Hisobni to'ldirish</b>\n"]
+    for c in cards:
+        bank_part = f" — <i>{html.escape(c.bank)}</i>" if c.bank else ""
+        lines.append(
+            f"Karta: <code>{html.escape(c.number)}</code>{bank_part}\n"
+            f"Egasi: <b>{html.escape(c.holder)}</b>\n"
+        )
+    lines.append(
+        "\nTo'lov qilganingizdan so'ng, chekni (skrinshot) shu yerga yuboring.\n"
         "Adminlar tasdiqlagach, balansingiz to'ldiriladi."
     )
-    await message.answer(text, parse_mode="HTML")
+    await message.answer("\n".join(lines), parse_mode="HTML")
 
 @router.message(F.text.startswith("/promo "))
 async def cmd_use_promo(message: Message):

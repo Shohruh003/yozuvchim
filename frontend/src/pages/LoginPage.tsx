@@ -16,6 +16,12 @@ export default function LoginPage() {
 
   useEffect(() => {
     let cancelled = false;
+    // Where to send the user after a successful login.
+    const rawRedirect = params.get('redirect') || '';
+    const target =
+      rawRedirect && rawRedirect.startsWith('/') && !rawRedirect.startsWith('//')
+        ? rawRedirect
+        : '/profile';
 
     async function attempt() {
       const tg = (window as any).Telegram?.WebApp;
@@ -41,7 +47,7 @@ export default function LoginPage() {
             if (cancelled) return;
             setToken(r.access_token);
             setStatus({ key: 'login.redirecting', tone: 'success' });
-            navigate('/profile', { replace: true });
+            navigate(target, { replace: true });
             return;
           } catch {
             /* fall through */
@@ -57,7 +63,7 @@ export default function LoginPage() {
           if (cancelled) return;
           setToken(r.access_token);
           setStatus({ key: 'login.redirecting', tone: 'success' });
-          navigate('/profile', { replace: true });
+          navigate(target, { replace: true });
           return;
         } catch {
           setStatus({ key: 'login.tokenInvalid', tone: 'error' });

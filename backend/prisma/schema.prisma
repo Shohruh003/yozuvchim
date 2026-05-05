@@ -196,6 +196,45 @@ model AppSettings {
 }
 
 // ----------------------------------------------------------------
+// PaymentAdminMessage — Telegram message IDs that the bot sent to each
+// admin when a new payment screenshot arrived. Stored so the backend can
+// edit those messages once a payment is approved/rejected from the web
+// (cross-process state).
+// ----------------------------------------------------------------
+model PaymentAdminMessage {
+  id          Int       @id @default(autoincrement())
+  payment_id  Int
+  invoice_id  String    @db.VarChar(64)
+  admin_id    BigInt
+  message_id  Int
+
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@index([payment_id])
+  @@index([invoice_id])
+  @@map("payment_admin_messages")
+}
+
+// ----------------------------------------------------------------
+// PaymentCard — bank card details shown on the top-up page.
+// Admins can add/edit/remove these via the admin panel.
+// ----------------------------------------------------------------
+model PaymentCard {
+  id          Int       @id @default(autoincrement())
+  number      String    @db.VarChar(32)
+  holder      String    @db.VarChar(128)
+  bank        String    @default("") @db.VarChar(64)
+  is_active   Boolean   @default(true)
+  sort_order  Int       @default(0)
+
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @updatedAt      @db.Timestamptz(6)
+
+  @@index([is_active, sort_order])
+  @@map("payment_cards")
+}
+
+// ----------------------------------------------------------------
 // Session — refresh-token sessions for the web app
 // ----------------------------------------------------------------
 model Session {

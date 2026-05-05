@@ -1,15 +1,19 @@
 {
+  "common": {
+    "loading": "Loading..."
+  },
   "nav": {
     "profile": "Profile",
     "orders": "Orders",
     "payments": "Payments",
-    "newOrder": "New order"
+    "newOrder": "New order",
+    "admin": "Admin panel"
   },
   "login": {
     "loading": "Signing in...",
     "redirecting": "Redirecting...",
-    "openInTelegram": "Please open via the Telegram bot.",
-    "tokenInvalid": "Invalid or expired token."
+    "openInTelegram": "Please open via Telegram bot.",
+    "tokenInvalid": "Token is invalid or expired."
   },
   "profile": {
     "balance": "Account balance",
@@ -37,7 +41,7 @@
     "title": "New order",
     "selectType": "Select document type",
     "back": "← Back",
-    "topic": "Topic",
+    "topic": "Topic / title",
     "topicPlaceholder": "Enter the topic...",
     "language": "Language",
     "size": "Size (pages/slides)",
@@ -65,19 +69,20 @@
       "date": "Date"
     },
     "preparing": "Preparing",
-    "autoRefresh": "This page refreshes every 5 seconds.",
+    "autoRefresh": "This page auto-refreshes every 5 seconds.",
     "result": "Result",
     "download": "📥 Download"
   },
   "payments": {
     "title": "Top up balance",
-    "info": "Payment details",
+    "info": "Payment information",
     "cardNumber": "Card number",
     "cardHolder": "Cardholder",
-    "instruction": "After payment, send the screenshot to the bot. The amount will be credited after admin approval.",
+    "instruction": "After paying, send the screenshot to the bot. The amount will be added to your balance once the admin approves it.",
     "history": "Payment history",
     "loading": "Loading...",
-    "empty": "No history yet",
+    "empty": "History is empty",
+    "noCards": "No cards configured yet. Please contact an admin.",
     "status": {
       "approved": "Approved",
       "pending": "Pending",
@@ -94,16 +99,204 @@
   "docTypes": {
     "article": "Article",
     "taqdimot": "Presentation",
-    "coursework": "Coursework",
+    "coursework": "Course work",
     "independent": "Independent work",
     "thesis": "Thesis",
     "diploma": "Diploma",
     "dissertation": "Dissertation",
-    "manual": "Study manual"
+    "manual": "Study guide"
   },
   "pptStyle": {
     "akademik": "🏛 Academic",
     "biznes": "💼 Business",
     "kreativ": "🎨 Creative"
+  },
+  "admin": {
+    "title": "Admin panel",
+    "backToApp": "Back to app",
+    "logout": "Logout",
+    "today": "today",
+    "thisWeek": "this week",
+    "thisMonth": "this month",
+    "activeUsers": "Active users",
+    "blockedUsers": "Blocked",
+    "free": "FREE",
+    "nav": {
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "payments": "Payments",
+      "transactions": "Transactions",
+      "cards": "Cards",
+      "admins": "Admins",
+      "settings": "Settings"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Overall metrics and statistics"
+    },
+    "stat": {
+      "totalRevenue": "Total revenue",
+      "users": "Users",
+      "orders": "Orders",
+      "todayRevenue": "Today's revenue"
+    },
+    "chart": {
+      "revenue30d": "Revenue (30 days)",
+      "userGrowth30d": "User growth (30 days)",
+      "ordersByType": "Orders by type",
+      "ordersByStatus": "Orders by status"
+    },
+    "users": {
+      "title": "Users",
+      "totalCount": "Total: {{count}}",
+      "searchPlaceholder": "Search by name or @username",
+      "empty": "No users found",
+      "blocked": "Blocked",
+      "unblocked": "Unblocked",
+      "block": "Block",
+      "unblock": "Unblock",
+      "viewDetail": "View detail",
+      "adjustBalance": "Adjust balance",
+      "balancePrompt": "Amount to add/subtract for {{name}} (negative allowed):",
+      "balanceUpdated": "Balance updated",
+      "blockConfirmTitle": "Block user",
+      "blockConfirmMsg": "Block {{name}}?",
+      "unblockConfirmTitle": "Unblock user",
+      "unblockConfirmMsg": "Unblock {{name}}?",
+      "promoteAdmin": "Promote to admin",
+      "promoteSuperadmin": "Promote to superadmin",
+      "demoteAdmin": "Demote to user",
+      "roleUpdated": "Role updated",
+      "pageOf": "Page {{current}} / {{total}}",
+      "col": {
+        "user": "User",
+        "role": "Role",
+        "balance": "Balance",
+        "orders": "Orders",
+        "spent": "Spent",
+        "joined": "Joined",
+        "actions": "Actions"
+      },
+      "detail": {
+        "title": "User details",
+        "balance": "Balance",
+        "totalSpent": "Spent",
+        "completed": "Done / total",
+        "ordersTab": "Orders ({{count}})",
+        "paymentsTab": "Payments ({{count}})",
+        "noOrders": "No orders",
+        "noPayments": "No payments"
+      }
+    },
+    "pay": {
+      "title": "Payments awaiting approval",
+      "subtitle": "Decide based on screenshots sent by users",
+      "empty": "All caught up!",
+      "viewScreenshot": "View screenshot",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approved": "Approved and added to balance",
+      "rejected": "Rejected",
+      "confirmApprove": "Add {{amount}} so'm to balance?",
+      "confirmReject": "Really reject this payment?",
+      "approveTitle": "Approve payment",
+      "amountHint": "Enter the actual amount from the receipt (so'm):",
+      "approveAndCredit": "Approve — {{amount}} so'm"
+    },
+    "tx": {
+      "title": "Transactions history",
+      "subtitle": "Filter revenue by date and time",
+      "from": "From (date, time)",
+      "to": "To (date, time)",
+      "status": "Status",
+      "quick": "Quick range",
+      "totalIncome": "Total income",
+      "approvedCount": "Approved payments",
+      "totalCount": "Total records",
+      "chart": "Revenue ({{bucket}})",
+      "income": "Revenue",
+      "empty": "No records in this range",
+      "bucket": {
+        "hour": "hourly",
+        "day": "daily"
+      },
+      "statusOpt": {
+        "all": "All",
+        "approved": "Approved",
+        "pending": "Pending",
+        "rejected": "Rejected"
+      },
+      "col": {
+        "user": "User",
+        "invoice": "Invoice",
+        "amount": "Amount",
+        "status": "Status",
+        "date": "Date"
+      }
+    },
+    "admins": {
+      "title": "Admin activity",
+      "subtitle": "Track orders admins make through the bot",
+      "empty": "No admins yet",
+      "orders": "Orders",
+      "recentOrders": "Recent orders",
+      "noActivity": "No activity"
+    },
+    "balance": {
+      "add": "Add",
+      "subtract": "Subtract",
+      "afterChange": "After change",
+      "confirm": "Confirm"
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Manage admin login and password",
+      "superadminOnly": "This section is for superadmins only",
+      "credsTitle": "Login and password",
+      "currentLogin": "Current login",
+      "newUsername": "New username",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "currentPassword": "Current password",
+      "passwordPlaceholder": "At least 8 characters",
+      "optionalHint": "optional",
+      "requiredHint": "required",
+      "save": "Save",
+      "saving": "Saving...",
+      "updated": "Updated",
+      "error": "Error",
+      "currentPasswordRequired": "Enter your current password",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordsDontMatch": "Passwords don't match",
+      "nothingToUpdate": "Enter a new username or password"
+    },
+    "cards": {
+      "title": "Payment cards",
+      "subtitle": "Manage card details shown to users",
+      "add": "New card",
+      "addFirst": "Add the first card",
+      "addTitle": "Add new card",
+      "editTitle": "Edit card",
+      "empty": "No cards yet",
+      "number": "Card number",
+      "holder": "Cardholder",
+      "bankLabel": "Bank",
+      "optional": "optional",
+      "sortOrder": "Sort order",
+      "status": "Status",
+      "activeFlag": "Active",
+      "inactive": "Inactive",
+      "edit": "Edit",
+      "delete": "Delete",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "save": "Save",
+      "cancel": "Cancel",
+      "added": "Card added",
+      "updated": "Card updated",
+      "deleted": "Card deleted",
+      "confirmDelete": "Delete card {{number}}?",
+      "requiredFields": "Card number and holder are required"
+    }
   }
 }

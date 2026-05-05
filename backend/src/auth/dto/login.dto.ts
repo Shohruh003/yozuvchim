@@ -15,3 +15,24 @@ export class RefreshDto {
   @IsString()
   refresh_token?: string;
 }
+
+export class AdminLoginDto {
+  @IsString()
+  username!: string;
+
+  @IsString()
+  password!: string;
+}
+
+export class UpdateAdminCredsDto {
+  @IsString()
+  current_password!: string;
+
+  @IsOptional()
+  @IsString()
+  new_username?: string;
+
+  @IsOptional()
+  @IsString()
+  new_password?: string;
+}

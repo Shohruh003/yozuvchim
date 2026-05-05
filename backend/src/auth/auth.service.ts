@@ -2,14 +2,19 @@ import {
   Injectable,
   UnauthorizedException,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { createHash, randomBytes } from 'crypto';
+import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginTokensService } from './login-tokens.service';
 import { verifyWebAppInitData, TelegramUser } from './telegram.util';
+
+const ADMIN_USER_KEY = 'admin_username';
+const ADMIN_HASH_KEY = 'admin_password_hash';
 
 export interface AuthTokens {
   access_token: string;
@@ -54,6 +59,131 @@ export class AuthService {
     });
 
     return this.issueTokens(userId, ua, ip);
+  }
+
+  /**
+   * Look up the stored admin username/hash, seeding from env on first run
+   * if the DB has no record yet.
+   */
+  private async getAdminCreds(): Promise<{ username: string; hash: string } | null> {
+    const [userRow, hashRow] = await Promise.all([
+      this.prisma.appSettings.findUnique({ where: { key: ADMIN_USER_KEY } }),
+      this.prisma.appSettings.findUnique({ where: { key: ADMIN_HASH_KEY } }),
+    ]);
+
+    if (userRow?.value && hashRow?.value) {
+      return { username: userRow.value, hash: hashRow.value };
+    }
+
+    // Seed from env on first run only.
+    const seedUser = (this.config.get<string>('ADMIN_LOGIN_USERNAME') || '').trim();
+    const seedPass = this.config.get<string>('ADMIN_LOGIN_PASSWORD') || '';
+    if (!seedUser || !seedPass) return null;
+
+    const hash = await bcrypt.hash(seedPass, 12);
+    await this.prisma.appSettings.upsert({
+      where: { key: ADMIN_USER_KEY },
+      create: { key: ADMIN_USER_KEY, value: seedUser },
+      update: { value: seedUser },
+    });
+    await this.prisma.appSettings.upsert({
+      where: { key: ADMIN_HASH_KEY },
+      create: { key: ADMIN_HASH_KEY, value: hash },
+      update: { value: hash },
+    });
+    this.logger.log('Seeded admin credentials from env into the DB');
+    return { username: seedUser, hash };
+  }
+
+  /**
+   * Admin/superadmin login via username + password.
+   * Credentials live in the DB (AppSettings); first run seeds them from env.
+   * The issued JWT belongs to the first ID in SUPERADMIN_IDS so the rest of
+   * the app recognises the user.
+   */
+  async loginAsAdmin(
+    username: string,
+    password: string,
+    ua?: string,
+    ip?: string,
+  ): Promise<AuthTokens> {
+    const creds = await this.getAdminCreds();
+    if (!creds) {
+      throw new UnauthorizedException('Admin login is not configured');
+    }
+    if (username.trim() !== creds.username) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    const ok = await bcrypt.compare(password, creds.hash);
+    if (!ok) throw new UnauthorizedException('Invalid credentials');
+
+    const ids = (this.config.get<string>('SUPERADMIN_IDS') || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (!ids.length) {
+      throw new UnauthorizedException('No superadmin configured');
+    }
+    const userId = BigInt(ids[0]);
+
+    await this.prisma.user.upsert({
+      where: { id: userId },
+      update: { role: 'superadmin' },
+      create: {
+        id: userId,
+        username: creds.username,
+        full_name: `Admin ${creds.username}`,
+        role: 'superadmin',
+      },
+    });
+
+    return this.issueTokens(userId, ua, ip);
+  }
+
+  /**
+   * Update the admin login username and/or password.
+   * The current password must be supplied for verification.
+   */
+  async updateAdminCreds(
+    currentPassword: string,
+    newUsername?: string,
+    newPassword?: string,
+  ): Promise<{ ok: true; username: string }> {
+    const creds = await this.getAdminCreds();
+    if (!creds) throw new UnauthorizedException('Admin login is not configured');
+
+    const ok = await bcrypt.compare(currentPassword, creds.hash);
+    if (!ok) throw new UnauthorizedException('Current password is incorrect');
+
+    const username = (newUsername ?? creds.username).trim();
+    if (!username) throw new BadRequestException('Username cannot be empty');
+
+    let hash = creds.hash;
+    if (newPassword) {
+      if (newPassword.length < 8) {
+        throw new BadRequestException('Password must be at least 8 characters');
+      }
+      hash = await bcrypt.hash(newPassword, 12);
+    }
+
+    await this.prisma.appSettings.upsert({
+      where: { key: ADMIN_USER_KEY },
+      create: { key: ADMIN_USER_KEY, value: username },
+      update: { value: username },
+    });
+    await this.prisma.appSettings.upsert({
+      where: { key: ADMIN_HASH_KEY },
+      create: { key: ADMIN_HASH_KEY, value: hash },
+      update: { value: hash },
+    });
+    this.logger.log('Admin credentials updated');
+    return { ok: true, username };
+  }
+
+  /** Read just the username (for showing the current login on the UI). */
+  async getAdminUsername(): Promise<string> {
+    const creds = await this.getAdminCreds();
+    return creds?.username ?? '';
   }
 
   /** Refresh access + refresh tokens. */

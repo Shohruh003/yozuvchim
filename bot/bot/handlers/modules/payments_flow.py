@@ -9,7 +9,7 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery
 
 from ...config import SETTINGS, logger
-from ...database import AsyncSessionLocal, Payment, get_all_admin_ids
+from ...database import AsyncSessionLocal, Payment, PaymentAdminMessage, get_all_admin_ids
 from ...keyboards import payment_review_kb
 
 router = Router()
@@ -42,6 +42,8 @@ async def process_payment_screenshot(message: Message, state: FSMContext, bot: B
         )
         session.add(pay)
         await session.commit()
+        await session.refresh(pay)
+        payment_pk = pay.id
 
     await message.answer(
         "✅ <b>Chek qabul qilindi!</b>\n\n"
@@ -50,8 +52,9 @@ async def process_payment_screenshot(message: Message, state: FSMContext, bot: B
         parse_mode="HTML"
     )
 
-    # Notify Admins — xabar IDlarini saqlab qo'yamiz (keyinchalik edit qilish uchun)
+    # Notify Admins — xabar IDlarini DB ga yozib qo'yamiz (keyinchalik edit qilish uchun)
     payment_admin_msgs[invoice_id] = {}
+    sent_pairs: list[tuple[int, int]] = []  # (admin_id, message_id)
     for adm in get_all_admin_ids():
         try:
             sent = await bot.send_message(
@@ -64,10 +67,22 @@ async def process_payment_screenshot(message: Message, state: FSMContext, bot: B
                 parse_mode="HTML"
             )
             payment_admin_msgs[invoice_id][adm] = sent.message_id
+            sent_pairs.append((adm, sent.message_id))
             # Forward the actual screenshot
             await message.copy_to(chat_id=adm)
         except Exception as e:
             logger.error(f"Failed to notify admin {adm} about payment: {e}", exc_info=True)
+
+    if sent_pairs:
+        async with AsyncSessionLocal() as session:
+            for adm, mid in sent_pairs:
+                session.add(PaymentAdminMessage(
+                    payment_id=payment_pk,
+                    invoice_id=invoice_id,
+                    admin_id=adm,
+                    message_id=mid,
+                ))
+            await session.commit()
 
     await state.clear()
 

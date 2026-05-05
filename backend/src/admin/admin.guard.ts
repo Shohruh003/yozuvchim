@@ -10,13 +10,15 @@ export class AdminGuard implements CanActivate {
     const user = req.user;
     if (!user) throw new ForbiddenException();
 
-    const adminIds = (this.config.get<string>('ADMIN_IDS') || '')
+    if (user.role === 'admin' || user.role === 'superadmin') return true;
+
+    // Bootstrap superadmins via env var (so the very first admin can log in)
+    const ids = (this.config.get<string>('SUPERADMIN_IDS') || '')
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
+    if (ids.includes(user.id.toString())) return true;
 
-    if (user.role === 'admin' || user.role === 'superadmin') return true;
-    if (adminIds.includes(user.id.toString())) return true;
     throw new ForbiddenException('Admins only');
   }
 }

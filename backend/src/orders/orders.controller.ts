@@ -33,8 +33,16 @@ export class OrdersController {
   }
 
   @Get()
-  list(@CurrentUser() user: any, @Query('limit') limit?: string) {
-    return this.orders.list(user.id, limit ? Number(limit) : 50);
+  list(
+    @CurrentUser() user: any,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    return this.orders.list(
+      user.id,
+      limit ? Number(limit) : 20,
+      offset ? Number(offset) : 0,
+    );
   }
 
   @Get(':id')

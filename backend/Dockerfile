@@ -30,7 +30,7 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY package.json ./
+COPY scripts ./scripts
 
-# Sync schema (creates tables on first run) then start the API.
-# Switch to `prisma migrate deploy` once you start tracking real migrations.
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss --skip-generate && node dist/main.js"]
+RUN chmod +x scripts/entrypoint.sh
+CMD ["sh", "scripts/entrypoint.sh"]
