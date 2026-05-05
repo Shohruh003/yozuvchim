@@ -602,13 +602,32 @@ async def process_one_request(req_id: int, bot: Bot):
 
             from .keyboards import get_feedback_keyboard
             await bot.send_document(
-                user_id, 
-                FSInputFile(str(file_path)), 
-                caption=caption + "\n\n<i>Natija qanday bo'ldi? Baholang:</i>", 
+                user_id,
+                FSInputFile(str(file_path)),
+                caption=caption + "\n\n<i>Natija qanday bo'ldi? Baholang:</i>",
                 parse_mode="HTML",
                 reply_markup=get_feedback_keyboard(req_id)
             )
             await safe_delete(status_msg)
+
+            # ─── Forward a copy to the results channel/group (audit log) ───
+            if RESULTS_CHANNEL:
+                with suppress(Exception):
+                    user_label = f"<a href='tg://user?id={user_id}'>#{user_id}</a>"
+                    audit_caption = (
+                        f"📁 <b>Yangi natija — #{req_id}</b>\n\n"
+                        f"👤 Foydalanuvchi: {user_label}\n"
+                        f"📝 Mavzu: {html_escape(title_clean)}\n"
+                        f"🧬 Tur: <code>{doc_type.upper()}</code>\n"
+                        f"📏 Hajm: <code>{length_str} bet</code>\n"
+                        f"⏱ Sana: {now_utc().strftime('%Y-%m-%d %H:%M UTC')}"
+                    )
+                    await bot.send_document(
+                        RESULTS_CHANNEL,
+                        FSInputFile(str(file_path)),
+                        caption=audit_caption,
+                        parse_mode="HTML",
+                    )
 
             # 7. Mark Success in DB
             async with AsyncSessionLocal() as session:
