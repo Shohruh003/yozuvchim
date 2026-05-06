@@ -7,6 +7,7 @@ import { apiGet, apiPost } from '@/lib/api';
 import { formatNumber } from '@/lib/utils';
 import { StatusBadge } from '@/components/StatusBadge';
 import { CredentialsRevealModal } from '@/components/admin/CredentialsRevealModal';
+import { ConfirmDialog } from '@/components/admin/ConfirmDialog';
 
 interface OrderRow {
   id: number;
@@ -69,6 +70,7 @@ export function UserDetailDrawer({ userId, isSuperadmin, onClose, onChange }: Pr
   const [tab, setTab] = useState<'orders' | 'payments'>('orders');
   const [busy, setBusy] = useState(false);
   const [creds, setCreds] = useState<{ username: string; password: string } | null>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
 
   const [ordersData, setOrdersData] = useState<PageResp<OrderRow> | null>(null);
   const [ordersPage, setOrdersPage] = useState(0);
@@ -123,9 +125,9 @@ export function UserDetailDrawer({ userId, isSuperadmin, onClose, onChange }: Pr
     }
   }
 
-  async function resetPassword() {
+  async function performResetPassword() {
     if (!data) return;
-    if (!confirm(t('admin.users.resetPasswordConfirm'))) return;
+    setConfirmReset(false);
     setBusy(true);
     try {
       const r = await apiPost<{ username: string; password: string }>(
@@ -243,7 +245,7 @@ export function UserDetailDrawer({ userId, isSuperadmin, onClose, onChange }: Pr
                   {(data.user.role === 'admin' || data.user.role === 'superadmin') && (
                     <button
                       disabled={busy}
-                      onClick={resetPassword}
+                      onClick={() => setConfirmReset(true)}
                       className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 text-sm font-medium disabled:opacity-50"
                     >
                       <KeyRound size={15} /> {t('admin.users.resetPassword')}
@@ -365,6 +367,17 @@ export function UserDetailDrawer({ userId, isSuperadmin, onClose, onChange }: Pr
         username={creds?.username || ''}
         password={creds?.password || ''}
         onClose={() => setCreds(null)}
+      />
+
+      <ConfirmDialog
+        open={confirmReset}
+        title={t('admin.users.resetPassword')}
+        message={t('admin.users.resetPasswordConfirm')}
+        confirmLabel={t('admin.users.resetPassword')}
+        cancelLabel={t('admin.cards.cancel')}
+        tone="danger"
+        onCancel={() => setConfirmReset(false)}
+        onConfirm={performResetPassword}
       />
     </div>
   );
